@@ -1,19 +1,54 @@
 {
   "pin": "9999",
-  "meter_id": "2149320",
+  "meter_id": "7ELS2541479709",
   "meter_type": "Itron G4 RF1",
-  "initial_reading": 13734.931,
-  "max_daily_consumption": 10,
+  "initial_reading": 0,
+  "max_daily_consumption": 25,
   "plausibility_factor": 3.0,
-  "owner": "EnBW",
-"app_url": "https://orvillewilbur.github.io/gas-tracker/",
+  "owner": "SWSZ",
+  "app_url": "https://orvillewilbur.github.io/gas-tracker/",
   "price_history": [
     {
-      "valid_from": "2026-03-07",
-      "gas_price_per_kwh": 0.0879,
-      "brennwert": 11.2,
-      "zustandszahl": 0.9505,
-      "note": "Initialwerte - bitte aus Gasrechnung anpassen"
+      "valid_from": "2023-07-05",
+      "gas_price_per_kwh": 0.10058,
+      "brennwert": 11.584,
+      "zustandszahl": 0.8966,
+      "note": "AP 9.40 ct netto + 7% MwSt (Zählerwechsel)"
+    },
+    {
+      "valid_from": "2024-01-01",
+      "gas_price_per_kwh": 0.11214,
+      "brennwert": 11.495,
+      "zustandszahl": 0.8966,
+      "note": "AP 10.48 ct netto + 7% MwSt (Preisanpassung)"
+    },
+    {
+      "valid_from": "2024-04-01",
+      "gas_price_per_kwh": 0.12471,
+      "brennwert": 11.495,
+      "zustandszahl": 0.8966,
+      "note": "AP 10.48 ct netto + 19% MwSt (MwSt-Anhebung)"
+    },
+    {
+      "valid_from": "2024-10-05",
+      "gas_price_per_kwh": 0.12471,
+      "brennwert": 11.476,
+      "zustandszahl": 0.8966,
+      "note": "BW-Änderung auf 11.476, AP unverändert"
+    },
+    {
+      "valid_from": "2024-11-26",
+      "gas_price_per_kwh": 0.12471,
+      "brennwert": 11.496,
+      "zustandszahl": 0.8966,
+      "note": "BW-Änderung auf 11.496, AP unverändert"
+    },
+    {
+      "valid_from": "2026-03-01",
+      "gas_price_per_kwh": 0.10436,
+      "brennwert": 11.496,
+      "zustandszahl": 0.8966,
+      "note": "AP 8.77 ct netto + 19% MwSt (Preissenkung). BW/ZZ vom Vorzeitraum"
     }
   ]
 }
