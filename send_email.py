@@ -137,7 +137,7 @@ if app_url:
       <div style="font-size:12px;color:#64748b;">Zählerstand (m³)</div>
     </div>
     <div style="flex:1;min-width:120px;background:#f8fafc;border-radius:12px;padding:16px;text-align:center;">
-      <div style="font-size:24px;font-weight:800;color:#059669;">{consumption:.3f if consumption else '-'}</div>
+      <div style="font-size:24px;font-weight:800;color:#059669;">{"%.3f" % consumption if consumption else '-'}</div>
       <div style="font-size:12px;color:#64748b;">Verbrauch (m³)</div>
     </div>
     <div style="flex:1;min-width:120px;background:#f8fafc;border-radius:12px;padding:16px;text-align:center;">
