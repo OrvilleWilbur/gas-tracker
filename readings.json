@@ -1,21 +1,61 @@
 {
-  "meter_id": "2149320",
+  "meter_id": "7ELS2541479709",
   "readings": [
     {
-      "timestamp": "2026-03-07T14:00:00+01:00",
-      "value": 13734.931,
+      "timestamp": "2023-07-05T12:00:00+02:00",
+      "value": 0,
       "consumption": null,
       "days_since_last": null,
       "daily_avg": null,
       "suspicious": false
     },
     {
-      "timestamp": "2026-03-07T18:52:20.869Z",
-      "value": 259688,
-      "consumption": 245953.069,
-      "days_since_last": 0.24,
-      "daily_avg": 1005178.414,
-      "suspicious": true
+      "timestamp": "2023-10-05T11:08:00+02:00",
+      "value": 186,
+      "consumption": 186,
+      "days_since_last": 92,
+      "daily_avg": 2.022,
+      "suspicious": false
+    },
+    {
+      "timestamp": "2023-12-19T12:00:00+01:00",
+      "value": 940,
+      "consumption": 754,
+      "days_since_last": 75,
+      "daily_avg": 10.053,
+      "suspicious": false
+    },
+    {
+      "timestamp": "2024-09-27T12:00:00+02:00",
+      "value": 2890,
+      "consumption": 1950,
+      "days_since_last": 283,
+      "daily_avg": 6.890,
+      "suspicious": false
+    },
+    {
+      "timestamp": "2024-11-25T12:00:00+01:00",
+      "value": 3386,
+      "consumption": 496,
+      "days_since_last": 59,
+      "daily_avg": 8.407,
+      "suspicious": false
+    },
+    {
+      "timestamp": "2025-09-22T12:00:00+02:00",
+      "value": 5920,
+      "consumption": 2534,
+      "days_since_last": 301,
+      "daily_avg": 8.419,
+      "suspicious": false
+    },
+    {
+      "timestamp": "2025-12-07T12:00:00+01:00",
+      "value": 6817,
+      "consumption": 897,
+      "days_since_last": 76,
+      "daily_avg": 11.803,
+      "suspicious": false
     }
   ]
 }
