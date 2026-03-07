@@ -30,7 +30,7 @@
       "value": 2890,
       "consumption": 1950,
       "days_since_last": 283,
-      "daily_avg": 6.890,
+      "daily_avg": 6.89,
       "suspicious": false
     },
     {
@@ -55,6 +55,14 @@
       "consumption": 897,
       "days_since_last": 76,
       "daily_avg": 11.803,
+      "suspicious": false
+    },
+    {
+      "timestamp": "2026-03-07T22:11:57.056Z",
+      "value": 7811,
+      "consumption": 994,
+      "days_since_last": 90.47,
+      "daily_avg": 10.987,
       "suspicious": false
     }
   ]
