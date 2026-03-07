@@ -49,6 +49,11 @@ def price_per_m3_for_date(cfg, date_str):
     return p["gas_price_per_kwh"] * p["brennwert"] * p["zustandszahl"]
 
 
+def m3_to_kwh(cfg, m3, date_str):
+    p = get_price_for_date(cfg, date_str)
+    return m3 * p["brennwert"] * p["zustandszahl"]
+
+
 def get_app_url(cfg):
     return cfg.get("app_url", "")
 
@@ -65,6 +70,10 @@ def build_email_html(readings, cfg):
     days = latest.get("days_since_last")
     costs = consumption * p if consumption else 0
     suspicious = latest.get("suspicious", False)
+
+    # kWh
+    kwh = m3_to_kwh(cfg, consumption, latest["timestamp"]) if consumption else 0
+    kwh_d = kwh / days if days and days > 0 else 0
 
     # Trend
     trend = ""
@@ -88,21 +97,30 @@ def build_email_html(readings, cfg):
     if app_url:
         settings_link = f'<div style="text-align:center;margin-top:16px;"><a href="{app_url}#settings" style="color:#3b82f6;font-size:13px;">⚙️ Preiseinstellungen ändern</a></div>'
 
+    # Format consumption
+    cons_str = f"{consumption:.3f}" if consumption else "-"
+    kwh_str = f"{kwh:.1f}" if kwh else "-"
+    avg_str = f"{daily_avg:.3f} m³/Tag ({kwh_d:.1f} kWh/d)" if daily_avg else "-"
+    days_str = f"{days:.1f} Tage" if days else "-"
+
     # Letzte 20 als Tabelle
     recent = readings[-20:]
     rows = ""
     for r in reversed(recent):
         t = datetime.fromisoformat(r["timestamp"])
         rp = price_per_m3_for_date(cfg, r["timestamp"])
-        c = f'+{r["consumption"]:.3f}' if r.get("consumption") is not None else "-"
+        rc = r.get("consumption")
+        r_kwh = m3_to_kwh(cfg, rc, r["timestamp"]) if rc is not None else None
+        c = f'+{rc:.3f}' if rc is not None else "-"
+        c_kwh = f'{r_kwh:.1f}' if r_kwh is not None else "-"
         d = f'{r.get("daily_avg", 0):.3f}' if r.get("daily_avg") is not None else "-"
-        k = f'{r["consumption"] * rp:.2f} €' if r.get("consumption") is not None else "-"
+        k = f'{rc * rp:.2f} €' if rc is not None else "-"
         is_sus = r.get("suspicious", False)
         flag = ' ⚠️' if is_sus else ''
         row_bg = 'background:#fef3c7;' if is_sus else ''
 
         delete_cell = ""
-if app_url:
+        if app_url:
             delete_url = f'{app_url}#delete={r["timestamp"]}'
             delete_cell = f'<td style="padding:8px 6px;border-bottom:1px solid #e2e8f0;text-align:center;{row_bg}"><a href="{delete_url}" style="color:#ef4444;text-decoration:none;font-size:16px;" title="Löschen">✕</a></td>'
         else:
@@ -112,6 +130,7 @@ if app_url:
           <td style="padding:8px 10px;border-bottom:1px solid #e2e8f0;{row_bg}">{t.strftime("%d.%m.%Y")}{flag}</td>
           <td style="padding:8px 10px;border-bottom:1px solid #e2e8f0;text-align:right;font-weight:600;{row_bg}">{r['value']:.3f}</td>
           <td style="padding:8px 10px;border-bottom:1px solid #e2e8f0;text-align:right;{row_bg}">{c}</td>
+          <td style="padding:8px 10px;border-bottom:1px solid #e2e8f0;text-align:right;{row_bg}">{c_kwh}</td>
           <td style="padding:8px 10px;border-bottom:1px solid #e2e8f0;text-align:right;{row_bg}">{d}</td>
           <td style="padding:8px 10px;border-bottom:1px solid #e2e8f0;text-align:right;{row_bg}">{k}</td>
           {delete_cell}
@@ -137,8 +156,8 @@ if app_url:
       <div style="font-size:12px;color:#64748b;">Zählerstand (m³)</div>
     </div>
     <div style="flex:1;min-width:120px;background:#f8fafc;border-radius:12px;padding:16px;text-align:center;">
-      <div style="font-size:24px;font-weight:800;color:#059669;">{"%.3f" % consumption if consumption else '-'}</div>
-      <div style="font-size:12px;color:#64748b;">Verbrauch (m³)</div>
+      <div style="font-size:24px;font-weight:800;color:#059669;">{kwh_str} kWh</div>
+      <div style="font-size:12px;color:#64748b;">{cons_str} m³</div>
     </div>
     <div style="flex:1;min-width:120px;background:#f8fafc;border-radius:12px;padding:16px;text-align:center;">
       <div style="font-size:24px;font-weight:800;color:#d97706;">{costs:.2f} €</div>
@@ -149,9 +168,9 @@ if app_url:
   <div style="background:#f8fafc;border-radius:12px;padding:16px;margin-bottom:20px;">
     <div style="font-size:14px;color:#64748b;">Ø Tagesverbrauch</div>
     <div style="font-size:20px;font-weight:700;margin-top:4px;">
-      {f'{daily_avg:.3f} m³/Tag' if daily_avg else '-'} {trend}
+      {avg_str} {trend}
     </div>
-    <div style="font-size:13px;color:#94a3b8;margin-top:4px;">Zeitraum: {f'{days:.1f} Tage' if days else '-'}</div>
+    <div style="font-size:13px;color:#94a3b8;margin-top:4px;">Zeitraum: {days_str}</div>
   </div>
 
   <h2 style="font-size:16px;font-weight:700;margin:20px 0 12px;color:#0f172a;">Letzte 20 Ablesungen</h2>
@@ -159,7 +178,8 @@ if app_url:
     <tr style="background:#f1f5f9;">
       <th style="padding:8px 10px;text-align:left;font-weight:600;color:#64748b;">Datum</th>
       <th style="padding:8px 10px;text-align:right;font-weight:600;color:#64748b;">Stand</th>
-      <th style="padding:8px 10px;text-align:right;font-weight:600;color:#64748b;">Verbr.</th>
+      <th style="padding:8px 10px;text-align:right;font-weight:600;color:#64748b;">m³</th>
+      <th style="padding:8px 10px;text-align:right;font-weight:600;color:#64748b;">kWh</th>
       <th style="padding:8px 10px;text-align:right;font-weight:600;color:#64748b;">Ø/Tag</th>
       <th style="padding:8px 10px;text-align:right;font-weight:600;color:#64748b;">Kosten</th>
       <th style="padding:8px 6px;text-align:center;font-weight:600;color:#64748b;width:30px;"></th>
@@ -185,16 +205,22 @@ if app_url:
 
 
 def build_csv(readings, cfg):
-    lines = ["Datum;Uhrzeit;Zaehlerstand_m3;Verbrauch_m3;Tage;Tagesverbrauch_m3;Kosten_EUR;Preis_EUR_m3;Verdaechtig"]
+    lines = ["Datum;Uhrzeit;Zaehlerstand_m3;Verbrauch_m3;Verbrauch_kWh;Tage;Tagesverbrauch_m3;Tagesverbrauch_kWh;Kosten_EUR;Preis_EUR_m3;Verdaechtig"]
     for r in readings:
         ts = datetime.fromisoformat(r["timestamp"])
         p = price_per_m3_for_date(cfg, r["timestamp"])
-        c = f'{r["consumption"]:.3f}' if r.get("consumption") is not None else ""
+        rc = r.get("consumption")
+        r_kwh = m3_to_kwh(cfg, rc, r["timestamp"]) if rc is not None else None
+        da = r.get("daily_avg")
+        da_kwh = m3_to_kwh(cfg, da, r["timestamp"]) if da is not None else None
+        c = f'{rc:.3f}' if rc is not None else ""
+        c_kwh = f'{r_kwh:.1f}' if r_kwh is not None else ""
         d = f'{r["days_since_last"]:.2f}' if r.get("days_since_last") is not None else ""
-        a = f'{r["daily_avg"]:.3f}' if r.get("daily_avg") is not None else ""
-        k = f'{r["consumption"] * p:.2f}' if r.get("consumption") is not None else ""
+        a = f'{da:.3f}' if da is not None else ""
+        a_kwh = f'{da_kwh:.1f}' if da_kwh is not None else ""
+        k = f'{rc * p:.2f}' if rc is not None else ""
         s = "ja" if r.get("suspicious") else "nein"
-        lines.append(f'{ts.strftime("%d.%m.%Y")};{ts.strftime("%H:%M")};{r["value"]:.3f};{c};{d};{a};{k};{p:.4f};{s}')
+        lines.append(f'{ts.strftime("%d.%m.%Y")};{ts.strftime("%H:%M")};{r["value"]:.3f};{c};{c_kwh};{d};{a};{a_kwh};{k};{p:.4f};{s}')
     return "\n".join(lines)
 
 
@@ -243,9 +269,11 @@ def main():
     ts = datetime.fromisoformat(latest["timestamp"])
     date_str = ts.strftime("%d.%m.%Y")
 
+    kwh = m3_to_kwh(cfg, latest.get("consumption", 0), latest["timestamp"]) if latest.get("consumption") else 0
+
     subject = f"Gasablesung {date_str}: {latest['value']:.3f} m³"
     if latest.get("consumption") is not None:
-        subject += f" (+{latest['consumption']:.3f})"
+        subject += f" (+{kwh:.0f} kWh)"
     if latest.get("suspicious"):
         subject += " ⚠️"
 
