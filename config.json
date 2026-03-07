@@ -6,7 +6,7 @@
   "max_daily_consumption": 10,
   "plausibility_factor": 3.0,
   "owner": "EnBW",
-  "app_url": "",
+"app_url": "https://orvillewilbur.github.io/gas-tracker/",
   "price_history": [
     {
       "valid_from": "2026-03-07",
