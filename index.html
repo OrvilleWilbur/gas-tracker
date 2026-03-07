@@ -42,6 +42,7 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
 .stat-card{background:var(--card);border-radius:14px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center}
 .stat-label{font-size:13px;color:var(--muted);text-align:left}
 .stat-value{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
+.stat-sub{font-size:14px;color:var(--muted);font-weight:400;margin-top:2px}
 .stat-trend{font-size:13px;margin-left:4px}
 .trend-up{color:var(--err)}.trend-down{color:var(--accent2)}.trend-flat{color:var(--muted)}
 .chart-container{background:var(--card);border-radius:14px;padding:16px;width:100%}
@@ -125,7 +126,7 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
   <h1>Danke für die Ablesung!</h1>
   <div class="stats" id="stats-container"></div>
   <div class="chart-container" id="chart-container" style="display:none">
-    <h2 style="margin-bottom:12px;text-align:left">Tagesverbrauch (m³)</h2>
+    <h2 style="margin-bottom:12px;text-align:left">Tagesverbrauch (kWh/d)</h2>
     <div class="chart-bars" id="chart-bars"></div>
   </div>
   <button class="btn btn-primary" id="btn-new-reading">Neue Ablesung</button>
@@ -168,20 +169,20 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
   </div>
 
   <div class="form-group">
-    <label class="form-label">Arbeitspreis (€/kWh)</label>
-    <input type="number" step="0.0001" class="form-input" id="set-price" placeholder="z.B. 0.0879" inputmode="decimal">
-    <div class="form-hint">Steht auf der Gasrechnung als "Arbeitspreis"</div>
+    <label class="form-label">Arbeitspreis brutto (€/kWh)</label>
+    <input type="number" step="0.0001" class="form-input" id="set-price" placeholder="z.B. 0.1247" inputmode="decimal">
+    <div class="form-hint">Arbeitspreis inkl. MwSt aus der Gasrechnung</div>
   </div>
 
   <div class="form-group">
     <label class="form-label">Brennwert (kWh/m³)</label>
-    <input type="number" step="0.01" class="form-input" id="set-brennwert" placeholder="z.B. 11.2" inputmode="decimal">
+    <input type="number" step="0.01" class="form-input" id="set-brennwert" placeholder="z.B. 11.496" inputmode="decimal">
     <div class="form-hint">Steht auf der Gasrechnung, ändert sich oft monatlich</div>
   </div>
 
   <div class="form-group">
     <label class="form-label">Zustandszahl</label>
-    <input type="number" step="0.0001" class="form-input" id="set-zustand" placeholder="z.B. 0.9505" inputmode="decimal">
+    <input type="number" step="0.0001" class="form-input" id="set-zustand" placeholder="z.B. 0.8966" inputmode="decimal">
     <div class="form-hint">Steht auf der Gasrechnung, regional unterschiedlich</div>
   </div>
 
@@ -201,7 +202,7 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
 <div id="settings-done-screen" class="screen">
   <div class="icon">✅</div>
   <h1>Gespeichert!</h1>
-  <p style="color:var(--muted)">Neue Preiswerte werden ab dem angegebenen Datum für Kostenberechnungen verwendet.</p>
+  <p style="color:var(--muted)">Neue Preiswerte werden ab dem angegebenen Datum für Berechnungen verwendet.</p>
   <button class="btn btn-primary" id="btn-settings-done-back">OK</button>
 </div>
 
@@ -215,9 +216,9 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
 
 <script>
 let CONFIG = {
-  pin:'9999',meter_id:'2149320',meter_type:'Itron G4 RF1',initial_reading:13734.931,
-  max_daily_consumption:10,plausibility_factor:3.0,
-  price_history:[{valid_from:'2026-03-07',gas_price_per_kwh:0.0879,brennwert:11.2,zustandszahl:0.9505}]
+  pin:'9999',meter_id:'7ELS2541479709',meter_type:'Itron G4 RF1',initial_reading:0,
+  max_daily_consumption:25,plausibility_factor:3.0,owner:'SWSZ',
+  price_history:[{valid_from:'2026-03-01',gas_price_per_kwh:0.10436,brennwert:11.496,zustandszahl:0.8966}]
 };
 
 let GITHUB_REPO=localStorage.getItem('gt_repo')||'';
@@ -233,7 +234,12 @@ function getPriceForDate(dateStr) {
   for (const entry of sorted) {
     if (entry.valid_from <= d) return entry;
   }
-  return sorted[sorted.length-1] || {gas_price_per_kwh:0,brennwert:0,zustandszahl:0};
+  return sorted[sorted.length-1] || {gas_price_per_kwh:0,brennwert:11.496,zustandszahl:0.8966};
+}
+
+function m3ToKwh(m3, dateStr) {
+  const p = getPriceForDate(dateStr);
+  return m3 * p.brennwert * p.zustandszahl;
 }
 
 function pricePerM3ForDate(dateStr) {
@@ -440,17 +446,28 @@ async function saveSettings(newEntry){
 function showStats(nr){
   showScreen('stats-screen');
   const c=document.getElementById('stats-container');
+  const kwh=m3ToKwh(nr.consumption, nr.timestamp);
+  const kwhD=nr.days_since_last>0 ? kwh/nr.days_since_last : 0;
   const pm3=pricePerM3ForDate(nr.timestamp);
   const costs=nr.consumption*pm3;
   let trend='';
-  if(readings.length>=3){const prev=readings[readings.length-2];if(prev&&prev.daily_avg){const d=((nr.daily_avg-prev.daily_avg)/prev.daily_avg*100);if(Math.abs(d)<5)trend='<span class="stat-trend trend-flat">→ stabil</span>';else if(d>0)trend=`<span class="stat-trend trend-up">↑ +${d.toFixed(0)}%</span>`;else trend=`<span class="stat-trend trend-down">↓ ${d.toFixed(0)}%</span>`}}
+  if(readings.length>=3){
+    const prev=readings[readings.length-2];
+    if(prev&&prev.daily_avg){
+      const prevKwhD=m3ToKwh(prev.daily_avg, prev.timestamp);
+      const d=((kwhD-prevKwhD)/prevKwhD*100);
+      if(Math.abs(d)<5)trend='<span class="stat-trend trend-flat">→ stabil</span>';
+      else if(d>0)trend=`<span class="stat-trend trend-up">↑ +${d.toFixed(0)}%</span>`;
+      else trend=`<span class="stat-trend trend-down">↓ ${d.toFixed(0)}%</span>`;
+    }
+  }
   const sus=nr.suspicious?'<div style="background:rgba(245,158,11,.15);color:var(--warn);padding:10px;border-radius:10px;font-size:13px;margin-bottom:8px">⚠️ Wert als verdächtig markiert</div>':'';
   c.innerHTML=`${sus}
-    <div class="stat-card"><div class="stat-label">Verbrauch seit<br>letzter Ablesung</div><div class="stat-value">${nr.consumption.toFixed(3)} m³</div></div>
+    <div class="stat-card"><div class="stat-label">Verbrauch</div><div style="text-align:right"><div class="stat-value">${kwh.toFixed(1)} kWh</div><div class="stat-sub">${nr.consumption.toFixed(3)} m³</div></div></div>
     <div class="stat-card"><div class="stat-label">Zeitraum</div><div class="stat-value">${nr.days_since_last.toFixed(1)} Tage</div></div>
-    <div class="stat-card"><div class="stat-label">Ø Tagesverbrauch</div><div class="stat-value">${nr.daily_avg.toFixed(3)} m³/d ${trend}</div></div>
-    <div class="stat-card"><div class="stat-label">Geschätzte Kosten</div><div class="stat-value">${costs.toFixed(2)} €</div></div>
-    <div class="stat-card"><div class="stat-label">Neuer Zählerstand</div><div class="stat-value">${nr.value.toFixed(3)} m³</div></div>`;
+    <div class="stat-card"><div class="stat-label">Ø Tagesverbrauch</div><div style="text-align:right"><div class="stat-value">${kwhD.toFixed(1)} kWh/d ${trend}</div><div class="stat-sub">${nr.daily_avg.toFixed(3)} m³/d</div></div></div>
+    <div class="stat-card"><div class="stat-label">Zählerstand</div><div class="stat-value">${nr.value.toFixed(3)} m³</div></div>
+    <div class="stat-card" style="opacity:0.6"><div class="stat-label">Gesch. Kosten</div><div class="stat-value" style="font-size:16px;color:var(--muted)">${costs.toFixed(2)} €</div></div>`;
   buildChart();
 }
 
@@ -458,15 +475,24 @@ function buildChart(){
   const cc=document.getElementById('chart-container'),be=document.getElementById('chart-bars');
   const dp=readings.filter(r=>r.daily_avg!=null).slice(-10);
   if(dp.length<2){cc.style.display='none';return}cc.style.display='block';
-  const mx=Math.max(...dp.map(r=>r.daily_avg));
-  be.innerHTML=dp.map(r=>{const h=Math.max(4,(r.daily_avg/mx)*100);const d=new Date(r.timestamp);const cls=r.suspicious?'chart-bar suspicious':'chart-bar';return`<div style="flex:1;text-align:center"><div class="${cls}" style="height:${h}px"></div><div class="chart-label">${d.getDate()}.${d.getMonth()+1}</div></div>`}).join('');
+  const dpKwh=dp.map(r=>{const kd=m3ToKwh(r.daily_avg,r.timestamp);return{kd,timestamp:r.timestamp,suspicious:r.suspicious}});
+  const mx=Math.max(...dpKwh.map(r=>r.kd));
+  be.innerHTML=dpKwh.map(r=>{const h=Math.max(4,(r.kd/mx)*100);const d=new Date(r.timestamp);const cls=r.suspicious?'chart-bar suspicious':'chart-bar';return`<div style="flex:1;text-align:center"><div class="${cls}" style="height:${h}px"></div><div class="chart-label">${d.getDate()}.${d.getMonth()+1}</div></div>`}).join('');
 }
 
 // --- History ---
 function showHistory(){
   showScreen('history-screen');const list=document.getElementById('history-list');
   const items=readings.slice().reverse().slice(0,20);
-  list.innerHTML=items.map(r=>{const d=new Date(r.timestamp);const dt=d.toLocaleDateString('de-DE');const tm=d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});const c=r.consumption!=null?`+${r.consumption.toFixed(3)} m³`:'Startwert';const f=r.suspicious?' ⚠️':'';return`<div class="stat-card"><div><div class="stat-label">${dt} ${tm}${f}</div><div style="font-size:13px;color:var(--muted);margin-top:2px">${c}</div></div><div class="stat-value" style="font-size:18px">${r.value.toFixed(3)}</div></div>`}).join('');
+  list.innerHTML=items.map(r=>{
+    const d=new Date(r.timestamp);const dt=d.toLocaleDateString('de-DE');const tm=d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+    const f=r.suspicious?' ⚠️':'';
+    if(r.consumption!=null){
+      const kwh=m3ToKwh(r.consumption,r.timestamp);
+      return`<div class="stat-card"><div><div class="stat-label">${dt} ${tm}${f}</div><div style="font-size:13px;color:var(--muted);margin-top:2px">+${kwh.toFixed(1)} kWh · ${r.consumption.toFixed(3)} m³</div></div><div class="stat-value" style="font-size:18px">${r.value.toFixed(3)}</div></div>`;
+    }
+    return`<div class="stat-card"><div><div class="stat-label">${dt} ${tm}${f}</div><div style="font-size:13px;color:var(--muted);margin-top:2px">Startwert</div></div><div class="stat-value" style="font-size:18px">${r.value.toFixed(3)}</div></div>`;
+  }).join('');
   if(!items.length)list.innerHTML='<div class="status-msg" style="color:var(--muted)">Noch keine Ablesungen.</div>';
 }
 
@@ -486,8 +512,8 @@ function showSettingsScreen(){
     const pm3=(e.gas_price_per_kwh*e.brennwert*e.zustandszahl);
     return`<div class="price-history-item">
       <div class="date">Gültig ab ${e.valid_from}</div>
-      <div class="values">Arbeitspreis: ${e.gas_price_per_kwh} €/kWh · Brennwert: ${e.brennwert} kWh/m³ · Zustandszahl: ${e.zustandszahl}</div>
-      <div class="computed">→ ${pm3.toFixed(4)} €/m³</div>
+      <div class="values">AP: ${e.gas_price_per_kwh} €/kWh · BW: ${e.brennwert} kWh/m³ · ZZ: ${e.zustandszahl}</div>
+      <div class="computed">→ ${pm3.toFixed(4)} €/m³ · 1 m³ = ${(e.brennwert*e.zustandszahl).toFixed(3)} kWh</div>
       ${e.note?`<div class="note">${e.note}</div>`:''}
     </div>`}).join('');
 }
