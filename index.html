@@ -47,9 +47,6 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
 .trend-up{color:var(--err)}.trend-down{color:var(--accent2)}.trend-flat{color:var(--muted)}
 .chart-container{background:var(--card);border-radius:14px;padding:16px;width:100%}
 .chart-bars{display:flex;align-items:flex-end;justify-content:space-around;height:120px;gap:4px;padding:0 8px}
-.chart-bar{flex:1;background:var(--accent);border-radius:4px 4px 0 0;min-height:4px;max-width:32px}
-.chart-bar.suspicious{background:var(--warn)}
-.chart-label{font-size:10px;color:var(--muted);text-align:center;margin-top:4px}
 .spinner{width:32px;height:32px;border:3px solid var(--input-bg);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-text{color:var(--muted);font-size:14px;margin-top:8px}
@@ -60,7 +57,6 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
 .review-hint{font-size:14px;color:var(--muted);line-height:1.5}
 .modal-buttons{display:flex;flex-direction:column;gap:10px;width:100%;max-width:300px}
 .modal-buttons .btn{padding:16px;font-size:16px}
-/* Settings */
 .form-group{width:100%;text-align:left}
 .form-label{font-size:13px;color:var(--muted);margin-bottom:4px;display:block}
 .form-input{width:100%;padding:14px 16px;border:2px solid var(--input-bg);border-radius:12px;background:var(--card);color:var(--text);font-size:16px;font-weight:600;outline:none;-webkit-appearance:none}
@@ -126,7 +122,7 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
   <h1>Danke für die Ablesung!</h1>
   <div class="stats" id="stats-container"></div>
   <div class="chart-container" id="chart-container" style="display:none">
-    <h2 style="margin-bottom:12px;text-align:left">Tagesverbrauch (kWh/d)</h2>
+    <h2 style="margin-bottom:12px;text-align:left">Ø Tagesverbrauch (kWh/d)</h2>
     <div class="chart-bars" id="chart-bars"></div>
   </div>
   <button class="btn btn-primary" id="btn-new-reading">Neue Ablesung</button>
@@ -254,7 +250,16 @@ function currentPricePerM3() {
 // --- Setup ---
 function checkSetup() {
   const h=window.location.hash;
-  if(h.includes('setup=')){const p=new URLSearchParams(h.substring(1));const t=p.get('setup'),r=p.get('repo');if(t)localStorage.setItem('gt_token',t);if(r)localStorage.setItem('gt_repo',r);GITHUB_TOKEN=t||GITHUB_TOKEN;GITHUB_REPO=r||GITHUB_REPO;window.location.hash='';history.replaceState(null,'',window.location.pathname)}
+  if(h.includes('setup=')){
+    const p=new URLSearchParams(h.substring(1));
+    const t=p.get('setup'),r=p.get('repo');
+    if(t){localStorage.setItem('gt_token',t);GITHUB_TOKEN=t}
+    if(r){localStorage.setItem('gt_repo',r);GITHUB_REPO=r}
+    p.delete('setup');p.delete('repo');
+    const rest=p.toString();
+    if(rest){window.location.hash=rest}
+    else{window.location.hash='';history.replaceState(null,'',window.location.pathname)}
+  }
 }
 
 function checkHashAction() {
@@ -463,21 +468,70 @@ function showStats(nr){
   }
   const sus=nr.suspicious?'<div style="background:rgba(245,158,11,.15);color:var(--warn);padding:10px;border-radius:10px;font-size:13px;margin-bottom:8px">⚠️ Wert als verdächtig markiert</div>':'';
   c.innerHTML=`${sus}
-    <div class="stat-card"><div class="stat-label">Verbrauch</div><div style="text-align:right"><div class="stat-value">${kwh.toFixed(1)} kWh</div><div class="stat-sub">${nr.consumption.toFixed(3)} m³</div></div></div>
+    <div class="stat-card"><div class="stat-label">Verbrauch</div><div style="text-align:right"><div class="stat-value">${kwh.toFixed(1)} kWh</div><div class="stat-sub">${nr.consumption.toFixed(3)} m³ · ~${costs.toFixed(2)} €</div></div></div>
     <div class="stat-card"><div class="stat-label">Zeitraum</div><div class="stat-value">${nr.days_since_last.toFixed(1)} Tage</div></div>
     <div class="stat-card"><div class="stat-label">Ø Tagesverbrauch</div><div style="text-align:right"><div class="stat-value">${kwhD.toFixed(1)} kWh/d ${trend}</div><div class="stat-sub">${nr.daily_avg.toFixed(3)} m³/d</div></div></div>
-    <div class="stat-card"><div class="stat-label">Zählerstand</div><div class="stat-value">${nr.value.toFixed(3)} m³</div></div>
-    <div class="stat-card" style="opacity:0.6"><div class="stat-label">Gesch. Kosten</div><div class="stat-value" style="font-size:16px;color:var(--muted)">${costs.toFixed(2)} €</div></div>`;
+    <div class="stat-card"><div class="stat-label">Zählerstand</div><div class="stat-value">${nr.value.toFixed(3)} m³</div></div>`;
   buildChart();
 }
 
 function buildChart(){
   const cc=document.getElementById('chart-container'),be=document.getElementById('chart-bars');
-  const dp=readings.filter(r=>r.daily_avg!=null).slice(-10);
-  if(dp.length<2){cc.style.display='none';return}cc.style.display='block';
-  const dpKwh=dp.map(r=>{const kd=m3ToKwh(r.daily_avg,r.timestamp);return{kd,timestamp:r.timestamp,suspicious:r.suspicious}});
+  const dp=readings.filter(r=>r.daily_avg!=null);
+  if(dp.length<2){cc.style.display='none';return}
+  cc.style.display='block';
+
+  const dpKwh=dp.map(r=>{
+    const kd=m3ToKwh(r.daily_avg,r.timestamp);
+    const t=new Date(r.timestamp).getTime();
+    return{kd,t,timestamp:r.timestamp,suspicious:r.suspicious};
+  });
+
+  const W=380,H=180,PL=36,PR=10,PT=16,PB=30;
+  const plotW=W-PL-PR,plotH=H-PT-PB;
+  const tMin=dpKwh[0].t,tMax=dpKwh[dpKwh.length-1].t;
+  const tRange=tMax-tMin||1;
   const mx=Math.max(...dpKwh.map(r=>r.kd));
-  be.innerHTML=dpKwh.map(r=>{const h=Math.max(4,(r.kd/mx)*100);const d=new Date(r.timestamp);const cls=r.suspicious?'chart-bar suspicious':'chart-bar';return`<div style="flex:1;text-align:center"><div class="${cls}" style="height:${h}px"></div><div class="chart-label">${d.getDate()}.${d.getMonth()+1}</div></div>`}).join('');
+  const yMax=Math.ceil(mx*1.15);
+
+  const pts=dpKwh.map(r=>({
+    x:PL+((r.t-tMin)/tRange)*plotW,
+    y:PT+plotH-(r.kd/yMax)*plotH,
+    kd:r.kd,timestamp:r.timestamp,suspicious:r.suspicious
+  }));
+
+  const polyline=pts.map(p=>`${p.x},${p.y}`).join(' ');
+  const area=`${pts[0].x},${PT+plotH} ${polyline} ${pts[pts.length-1].x},${PT+plotH}`;
+
+  let yLabels='';
+  const ySteps=4;
+  for(let i=0;i<=ySteps;i++){
+    const val=(yMax/ySteps)*i;
+    const y=PT+plotH-(val/yMax)*plotH;
+    yLabels+=`<text x="${PL-4}" y="${y+3}" text-anchor="end" fill="#94a3b8" font-size="9" font-family="sans-serif">${val.toFixed(0)}</text>`;
+    yLabels+=`<line x1="${PL}" y1="${y}" x2="${W-PR}" y2="${y}" stroke="#334155" stroke-width="0.5"/>`;
+  }
+
+  const dots=pts.map(p=>{
+    const col=p.suspicious?'#f59e0b':'#3b82f6';
+    return`<circle cx="${p.x}" cy="${p.y}" r="4" fill="${col}" stroke="#1e293b" stroke-width="2"/>`;
+  }).join('');
+
+  const valLabels=pts.map(p=>`<text x="${p.x}" y="${p.y-10}" text-anchor="middle" fill="#f1f5f9" font-size="9" font-weight="600" font-family="sans-serif">${p.kd.toFixed(1)}</text>`).join('');
+
+  const dateLabels=pts.map(p=>{
+    const d=new Date(p.timestamp);
+    return`<text x="${p.x}" y="${H-4}" text-anchor="middle" fill="#94a3b8" font-size="8" font-family="sans-serif">${d.getDate()}.${d.getMonth()+1}.${String(d.getFullYear()).slice(2)}</text>`;
+  }).join('');
+
+  be.innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;">
+    ${yLabels}
+    <polygon points="${area}" fill="rgba(59,130,246,0.12)"/>
+    <polyline points="${polyline}" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${dots}
+    ${valLabels}
+    ${dateLabels}
+  </svg>`;
 }
 
 // --- History ---
@@ -535,7 +589,6 @@ async function init(){
   const hashAction=checkHashAction();
   await loadData();
 
-  // Delete flow
   if(hashAction&&hashAction.action==='delete'){
     const entry=readings.find(r=>r.timestamp===hashAction.ts);
     pinFlow(()=>{
@@ -549,13 +602,11 @@ async function init(){
     return;
   }
 
-  // Settings flow
   if(hashAction&&hashAction.action==='settings'){
     pinFlow(()=>showSettingsScreen());
     return;
   }
 
-  // Normal flow
   pinFlow(()=>{showScreen('input-screen');updateReadingDisplay()});
   buildNumpad('input-pad',handleInputKey);
 
@@ -567,7 +618,6 @@ async function init(){
   document.getElementById('btn-confirm-suspicious').onclick=()=>{saveReading(pendingValue,true);pendingValue=null};
   document.getElementById('btn-correct').onclick=()=>{pendingValue=null;showScreen('input-screen');updateReadingDisplay()};
 
-  // Settings
   document.getElementById('btn-save-settings').onclick=()=>{
     const d=document.getElementById('set-date').value;
     const p=parseFloat(document.getElementById('set-price').value);
