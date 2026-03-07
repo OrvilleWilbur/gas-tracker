@@ -1,0 +1,19 @@
+{
+  "pin": "1234",
+  "meter_id": "2149320",
+  "meter_type": "Itron G4 RF1",
+  "initial_reading": 13734.931,
+  "max_daily_consumption": 10,
+  "plausibility_factor": 3.0,
+  "owner": "EnBW",
+  "app_url": "",
+  "price_history": [
+    {
+      "valid_from": "2026-03-07",
+      "gas_price_per_kwh": 0.0879,
+      "brennwert": 11.2,
+      "zustandszahl": 0.9505,
+      "note": "Initialwerte - bitte aus Gasrechnung anpassen"
+    }
+  ]
+}
