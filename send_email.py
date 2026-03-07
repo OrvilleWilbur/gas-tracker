@@ -102,7 +102,7 @@ def build_email_html(readings, cfg):
         row_bg = 'background:#fef3c7;' if is_sus else ''
 
         delete_cell = ""
-        if is_sus and app_url:
+if app_url:
             delete_url = f'{app_url}#delete={r["timestamp"]}'
             delete_cell = f'<td style="padding:8px 6px;border-bottom:1px solid #e2e8f0;text-align:center;{row_bg}"><a href="{delete_url}" style="color:#ef4444;text-decoration:none;font-size:16px;" title="Löschen">✕</a></td>'
         else:
