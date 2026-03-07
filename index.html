@@ -215,7 +215,7 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
 
 <script>
 let CONFIG = {
-  pin:'1234',meter_id:'2149320',meter_type:'Itron G4 RF1',initial_reading:13734.931,
+  pin:'9999',meter_id:'2149320',meter_type:'Itron G4 RF1',initial_reading:13734.931,
   max_daily_consumption:10,plausibility_factor:3.0,
   price_history:[{valid_from:'2026-03-07',gas_price_per_kwh:0.0879,brennwert:11.2,zustandszahl:0.9505}]
 };
@@ -228,9 +228,8 @@ let readings=[],pinInput='',readingInput='',currentSha='',configSha='',pendingVa
 // --- Price history lookup ---
 function getPriceForDate(dateStr) {
   const ph = CONFIG.price_history || [];
-  // Sort descending by valid_from
   const sorted = [...ph].sort((a,b) => b.valid_from.localeCompare(a.valid_from));
-  const d = dateStr.substring(0,10); // YYYY-MM-DD
+  const d = dateStr.substring(0,10);
   for (const entry of sorted) {
     if (entry.valid_from <= d) return entry;
   }
@@ -273,12 +272,69 @@ function buildNumpad(id,onKey){
 // --- PIN ---
 function updatePinDots(err){document.querySelectorAll('#pin-dots .pin-dot').forEach((d,i)=>{d.classList.toggle('filled',i<pinInput.length);d.classList.toggle('error',err)})}
 
+// --- Lockout ---
+function getLockout(){
+  try{const d=JSON.parse(localStorage.getItem('gt_lockout')||'{}');return{fails:d.fails||0,until:d.until||0}}catch(e){return{fails:0,until:0}}
+}
+function setLockout(fails,until){localStorage.setItem('gt_lockout',JSON.stringify({fails,until}))}
+function resetLockout(){localStorage.removeItem('gt_lockout')}
+function lockoutDuration(fails){
+  const extra=fails-3;
+  return 3600000*Math.pow(2,Math.max(0,extra));
+}
+function formatLockTime(ms){
+  const m=Math.ceil(ms/60000);
+  if(m>=60){const h=Math.floor(m/60),rm=m%60;return rm>0?`${h}h ${rm}min`:`${h}h`}
+  return`${m} min`;
+}
+
 function pinFlow(onSuccess){
   pinInput='';updatePinDots(false);showScreen('pin-screen');
+  const h2=document.getElementById('pin-screen').querySelector('h2');
+  let lockTimer=null;
+
+  function checkLocked(){
+    const lo=getLockout();
+    const remaining=lo.until-Date.now();
+    if(lo.fails>=3&&remaining>0){
+      h2.textContent=`Gesperrt — ${formatLockTime(remaining)}`;
+      h2.style.color='var(--err)';
+      if(lockTimer)clearInterval(lockTimer);
+      lockTimer=setInterval(()=>{
+        const r2=lo.until-Date.now();
+        if(r2<=0){clearInterval(lockTimer);h2.textContent='PIN eingeben';h2.style.color='';return}
+        h2.textContent=`Gesperrt — ${formatLockTime(r2)}`;
+      },10000);
+      return true;
+    }
+    h2.textContent='PIN eingeben';h2.style.color='';
+    return false;
+  }
+
+  checkLocked();
+
   buildNumpad('pin-pad',(key)=>{
+    if(checkLocked())return;
     if(key==='del'){pinInput=pinInput.slice(0,-1);updatePinDots(false);return}
     if(pinInput.length>=4)return;pinInput+=key;updatePinDots(false);
-    if(pinInput.length===4){if(pinInput===CONFIG.pin){setTimeout(onSuccess,200)}else{updatePinDots(true);setTimeout(()=>{pinInput='';updatePinDots(false)},600)}}
+    if(pinInput.length===4){
+      if(pinInput===CONFIG.pin){
+        resetLockout();
+        if(lockTimer)clearInterval(lockTimer);
+        setTimeout(onSuccess,200);
+      }else{
+        const lo=getLockout();
+        const newFails=lo.fails+1;
+        if(newFails>=3){
+          const dur=lockoutDuration(newFails);
+          setLockout(newFails,Date.now()+dur);
+        }else{
+          setLockout(newFails,0);
+        }
+        updatePinDots(true);
+        setTimeout(()=>{pinInput='';updatePinDots(false);checkLocked()},600);
+      }
+    }
   });
 }
 
@@ -417,7 +473,6 @@ function showHistory(){
 // --- Settings screen ---
 function showSettingsScreen(){
   showScreen('settings-screen');
-  // Pre-fill with current values
   const cur=getPriceForDate(new Date().toISOString());
   document.getElementById('set-date').value=new Date().toISOString().substring(0,10);
   document.getElementById('set-price').value=cur.gas_price_per_kwh;
@@ -425,7 +480,6 @@ function showSettingsScreen(){
   document.getElementById('set-zustand').value=cur.zustandszahl;
   document.getElementById('set-note').value='';
 
-  // Show history
   const list=document.getElementById('price-history-list');
   const ph=[...(CONFIG.price_history||[])].reverse();
   list.innerHTML=ph.map(e=>{
