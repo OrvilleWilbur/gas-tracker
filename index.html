@@ -42,8 +42,6 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
 .stat-card{background:var(--card);border-radius:14px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center}
 .stat-label{font-size:13px;color:var(--muted);text-align:left}
 .stat-value{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
-.stat-trend{font-size:13px;margin-left:4px}
-.trend-up{color:var(--err)}.trend-down{color:var(--accent2)}.trend-flat{color:var(--muted)}
 .chart-container{background:var(--card);border-radius:14px;padding:16px;width:100%}
 .spinner{width:32px;height:32px;border:3px solid var(--input-bg);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -55,7 +53,6 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
 .review-hint{font-size:14px;color:var(--muted);line-height:1.5}
 .modal-buttons{display:flex;flex-direction:column;gap:10px;width:100%;max-width:300px}
 .modal-buttons .btn{padding:16px;font-size:16px}
-/* Settings */
 .form-group{width:100%;text-align:left}
 .form-label{font-size:13px;color:var(--muted);margin-bottom:4px;display:block}
 .form-input{width:100%;padding:14px 16px;border:2px solid var(--input-bg);border-radius:12px;background:var(--card);color:var(--text);font-size:16px;font-weight:600;outline:none;-webkit-appearance:none}
@@ -94,7 +91,7 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
   <button class="btn btn-ghost" id="btn-history">Letzte Ablesungen</button>
 </div>
 
-<!-- Review (Plausicheck) -->
+<!-- Review -->
 <div id="review-screen" class="screen">
   <div class="icon">⚠️</div>
   <h1>Bitte kontrollieren</h1>
@@ -115,7 +112,7 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
   <div class="loading-text" id="loading-text">Wird gespeichert...</div>
 </div>
 
-<!-- Success -->
+<!-- Success / Stats -->
 <div id="stats-screen" class="screen">
   <div class="icon">✅</div>
   <h1>Danke für die Ablesung!</h1>
@@ -156,41 +153,33 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
   <div class="icon">⚙️</div>
   <h1>Einstellungen</h1>
   <h2>Neue Preiswerte eintragen</h2>
-
   <div class="form-group">
     <label class="form-label">Gültig ab</label>
     <input type="date" class="form-input" id="set-date">
     <div class="form-hint">Ab wann gelten die neuen Werte?</div>
   </div>
-
   <div class="form-group">
     <label class="form-label">Arbeitspreis brutto (€/kWh)</label>
     <input type="number" step="0.0001" class="form-input" id="set-price" placeholder="z.B. 0.10436" inputmode="decimal">
     <div class="form-hint">Arbeitspreis inkl. MwSt aus der Gasrechnung</div>
   </div>
-
   <div class="form-group">
     <label class="form-label">Brennwert (kWh/m³)</label>
     <input type="number" step="0.001" class="form-input" id="set-brennwert" placeholder="z.B. 11.496" inputmode="decimal">
     <div class="form-hint">Steht auf der Gasrechnung, ändert sich gelegentlich</div>
   </div>
-
   <div class="form-group">
     <label class="form-label">Zustandszahl</label>
     <input type="number" step="0.0001" class="form-input" id="set-zustand" placeholder="z.B. 0.8966" inputmode="decimal">
     <div class="form-hint">Steht auf der Gasrechnung, regional unterschiedlich</div>
   </div>
-
   <div class="form-group">
     <label class="form-label">Notiz (optional)</label>
     <input type="text" class="form-input" id="set-note" placeholder="z.B. Jahresabrechnung 2026">
   </div>
-
   <button class="btn btn-success" id="btn-save-settings">Speichern</button>
-
   <h2 style="margin-top:12px">Preishistorie</h2>
   <div class="stats" id="price-history-list"></div>
-
   <button class="btn btn-ghost" id="btn-back-from-settings">← Zurück</button>
 </div>
 
@@ -299,7 +288,6 @@ function pinFlow(onSuccess){
   pinInput='';updatePinDots(false);showScreen('pin-screen');
   const h2=document.getElementById('pin-screen').querySelector('h2');
   let lockTimer=null;
-
   function checkLocked(){
     const lo=getLockout();
     const remaining=lo.until-Date.now();
@@ -317,9 +305,7 @@ function pinFlow(onSuccess){
     h2.textContent='PIN eingeben';h2.style.color='';
     return false;
   }
-
   checkLocked();
-
   buildNumpad('pin-pad',(key)=>{
     if(checkLocked())return;
     if(key==='del'){pinInput=pinInput.slice(0,-1);updatePinDots(false);return}
@@ -443,7 +429,7 @@ async function saveSettings(newEntry){
   }catch(e){document.getElementById('error-msg').textContent=e.message;showScreen('error-screen')}
 }
 
-// --- Stats ---
+// --- Stats (unified layout) ---
 function showStats(nr){
   showScreen('stats-screen');
   const c=document.getElementById('stats-container');
@@ -453,102 +439,96 @@ function showStats(nr){
   const costs=nr.consumption*pm3;
   const costsDay=nr.days_since_last>0?costs/nr.days_since_last:0;
   const kwhDay=nr.days_since_last>0?kwh/nr.days_since_last:0;
+  const m3Day=nr.days_since_last>0?nr.consumption/nr.days_since_last:0;
   const last=readings.length>=2?readings[readings.length-2]:null;
-  const lastDate=last?new Date(last.timestamp).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}):'—';
+  const lastDate=last?new Date(last.timestamp).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'})+' '+new Date(last.timestamp).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}):'—';
   const lastValue=last?last.value.toFixed(3)+' m³':'—';
+  const nowDate=new Date(nr.timestamp);
+  const nowStr=nowDate.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'})+' '+nowDate.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
   const sus=nr.suspicious?'<div style="background:rgba(245,158,11,.15);color:var(--warn);padding:10px;border-radius:10px;font-size:13px;margin-bottom:8px">⚠️ Wert als verdächtig markiert</div>':'';
   c.innerHTML=`${sus}
-    <div class="stat-card"><div class="stat-label">Neuer Zählerstand</div><div class="stat-value">${nr.value.toFixed(3)} <span class="reading-unit">m³</span></div></div>
-    <div class="stat-card"><div class="stat-label">Letzte Ablesung</div><div><div class="stat-value" style="font-size:18px">${lastValue}</div><div style="font-size:12px;color:var(--muted)">${lastDate}</div></div></div>
-    <div class="stat-card"><div class="stat-label">Zeitraum</div><div class="stat-value">${nr.days_since_last.toFixed(0)} <span style="font-size:14px;color:var(--muted)">Tage</span></div></div>
-    <div class="stat-card" style="flex-direction:column;align-items:stretch;gap:8px">
-      <div style="font-size:13px;color:var(--muted)">Verbrauch seit letzter Ablesung</div>
-      <div style="display:flex;justify-content:space-between;align-items:baseline">
-        <div><span style="font-size:22px;font-weight:800">${kwh.toFixed(1)}</span> <span style="color:var(--muted)">kWh</span></div>
-        <div><span style="font-size:22px;font-weight:800">${nr.consumption.toFixed(3)}</span> <span style="color:var(--muted)">m³</span></div>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:baseline;font-size:14px;color:var(--muted)">
-        <div>Ø ${kwhDay.toFixed(1)} kWh/d</div>
-        <div>Ø ${nr.daily_avg.toFixed(2)} m³/d</div>
+    <div class="stat-card" style="flex-direction:column;align-items:stretch">
+      <div style="font-size:13px;color:var(--muted)">Neuer Zählerstand</div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:4px">
+        <div class="stat-value">${nr.value.toFixed(3)} <span class="reading-unit">m³</span></div>
+        <div style="font-size:12px;color:var(--muted)">${nowStr}</div>
       </div>
     </div>
-    <div class="stat-card" style="flex-direction:column;align-items:stretch;gap:8px">
-      <div style="font-size:13px;color:var(--muted)">Kosten seit letzter Ablesung</div>
+    <div class="stat-card" style="flex-direction:column;align-items:stretch">
+      <div style="font-size:13px;color:var(--muted)">Letzte Ablesung</div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:4px">
+        <div style="font-size:18px;font-weight:800">${lastValue}</div>
+        <div style="font-size:12px;color:var(--muted)">${lastDate}</div>
+      </div>
+    </div>
+    <div class="stat-card"><div class="stat-label">Zeitraum</div><div class="stat-value">${nr.days_since_last.toFixed(0)} <span style="font-size:14px;color:var(--muted)">Tage</span></div></div>
+    <div class="stat-card" style="flex-direction:column;align-items:stretch;gap:6px">
+      <div style="font-size:13px;color:var(--muted)">Verbrauch seit letzter Ablesung</div>
       <div style="display:flex;justify-content:space-between;align-items:baseline">
-        <div><span style="font-size:22px;font-weight:800">${costs.toFixed(2)}</span> <span style="color:var(--muted)">€</span></div>
-        <div><span style="font-size:16px;font-weight:700">${costsDay.toFixed(2)}</span> <span style="color:var(--muted)">€/Tag</span></div>
+        <div><span style="font-size:20px;font-weight:800">${nr.consumption.toFixed(3)}</span> <span style="color:var(--muted)">m³</span></div>
+        <div><span style="font-size:20px;font-weight:800">${kwh.toFixed(1)}</span> <span style="color:var(--muted)">kWh</span></div>
+        <div><span style="font-size:20px;font-weight:800">${costs.toFixed(2)}</span> <span style="color:var(--muted)">€</span></div>
+      </div>
+    </div>
+    <div class="stat-card" style="flex-direction:column;align-items:stretch;gap:6px">
+      <div style="font-size:13px;color:var(--muted)">Ø pro Tag</div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline">
+        <div><span style="font-size:20px;font-weight:800">${m3Day.toFixed(2)}</span> <span style="color:var(--muted)">m³</span></div>
+        <div><span style="font-size:20px;font-weight:800">${kwhDay.toFixed(1)}</span> <span style="color:var(--muted)">kWh</span></div>
+        <div><span style="font-size:20px;font-weight:800">${costsDay.toFixed(2)}</span> <span style="color:var(--muted)">€</span></div>
       </div>
     </div>`;
   buildChart();
 }
 
-// --- SVG Line Chart ---
+// --- SVG Line Chart (kWh/d) ---
 function buildChart(){
   const cc=document.getElementById('chart-container'),svg=document.getElementById('chart-svg');
   const dp=readings.filter(r=>r.daily_avg!=null);
   if(dp.length<2){cc.style.display='none';return}
   cc.style.display='block';
-
   const W=380,H=180,pad={t:20,r:15,b:36,l:42};
   const cw=W-pad.l-pad.r,ch=H-pad.t-pad.b;
-
-  // Convert to kWh/d
   const pts=dp.map(r=>{
     const p=getPriceForDate(r.timestamp);
-    const kwhD=r.daily_avg*p.brennwert*p.zustandszahl;
-    return{date:new Date(r.timestamp),val:kwhD};
+    return{date:new Date(r.timestamp),val:r.daily_avg*p.brennwert*p.zustandszahl};
   });
-
   const minT=pts[0].date.getTime(),maxT=pts[pts.length-1].date.getTime();
   const maxV=Math.max(...pts.map(p=>p.val))*1.15;
   const x=d=>pad.l+(maxT===minT?cw/2:((d.getTime()-minT)/(maxT-minT))*cw);
   const y=v=>pad.t+ch-(v/maxV)*ch;
-
-  // Line path
   const line=pts.map((p,i)=>`${i===0?'M':'L'}${x(p.date).toFixed(1)},${y(p.val).toFixed(1)}`).join(' ');
-  // Area fill
   const area=line+` L${x(pts[pts.length-1].date).toFixed(1)},${(pad.t+ch).toFixed(1)} L${x(pts[0].date).toFixed(1)},${(pad.t+ch).toFixed(1)} Z`;
-
-  // Y-axis labels
   const ySteps=4;
   let yLabels='';
   for(let i=0;i<=ySteps;i++){
-    const v=(maxV/ySteps)*i;
-    const yy=y(v);
+    const v=(maxV/ySteps)*i;const yy=y(v);
     yLabels+=`<text x="${pad.l-6}" y="${yy+4}" text-anchor="end" fill="#94a3b8" font-size="10">${v.toFixed(0)}</text>`;
     if(i>0)yLabels+=`<line x1="${pad.l}" y1="${yy}" x2="${W-pad.r}" y2="${yy}" stroke="#334155" stroke-width="0.5"/>`;
   }
-
-  // X-axis date labels
   let xLabels='';
   const labelCount=Math.min(pts.length,6);
   const step=Math.max(1,Math.floor((pts.length-1)/(labelCount-1)));
   const labeled=new Set();
-  for(let i=0;i<pts.length;i+=step){labeled.add(i)}
+  for(let i=0;i<pts.length;i+=step)labeled.add(i);
   labeled.add(pts.length-1);
   labeled.forEach(i=>{
-    const p=pts[i];
-    const d=p.date;
-    const label=`${d.getDate()}.${d.getMonth()+1}.${String(d.getFullYear()).slice(2)}`;
-    xLabels+=`<text x="${x(d).toFixed(1)}" y="${H-4}" text-anchor="middle" fill="#94a3b8" font-size="9">${label}</text>`;
+    const p=pts[i],d=p.date;
+    xLabels+=`<text x="${x(d).toFixed(1)}" y="${H-4}" text-anchor="middle" fill="#94a3b8" font-size="9">${d.getDate()}.${d.getMonth()+1}.${String(d.getFullYear()).slice(2)}</text>`;
   });
-
-  // Value dots and labels
   let dots='';
   pts.forEach(p=>{
     const cx=x(p.date),cy=y(p.val);
     dots+=`<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="3.5" fill="#3b82f6" stroke="#0f172a" stroke-width="1.5"/>`;
     dots+=`<text x="${cx.toFixed(1)}" y="${(cy-8).toFixed(1)}" text-anchor="middle" fill="#f1f5f9" font-size="9" font-weight="600">${p.val.toFixed(1)}</text>`;
   });
-
   svg.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg">
     <defs><linearGradient id="areaG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3b82f6" stop-opacity="0.3"/><stop offset="100%" stop-color="#3b82f6" stop-opacity="0.02"/></linearGradient></defs>
     ${yLabels}
     <line x1="${pad.l}" y1="${pad.t+ch}" x2="${W-pad.r}" y2="${pad.t+ch}" stroke="#334155" stroke-width="1"/>
     <path d="${area}" fill="url(#areaG)"/>
     <path d="${line}" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    ${dots}
-    ${xLabels}
+    ${dots}${xLabels}
   </svg>`;
 }
 
@@ -577,7 +557,6 @@ function showSettingsScreen(){
   document.getElementById('set-brennwert').value=cur.brennwert;
   document.getElementById('set-zustand').value=cur.zustandszahl;
   document.getElementById('set-note').value='';
-
   const list=document.getElementById('price-history-list');
   const ph=[...(CONFIG.price_history||[])].reverse();
   list.innerHTML=ph.map(e=>{
@@ -603,11 +582,8 @@ function handleSubmit(){
 async function init(){
   checkSetup();
   if(!GITHUB_TOKEN||!GITHUB_REPO){document.getElementById('pin-screen').querySelector('h2').textContent='Setup fehlt! Bitte Admin-Link verwenden.';return}
-
   const hashAction=checkHashAction();
   await loadData();
-
-  // Delete flow
   if(hashAction&&hashAction.action==='delete'){
     const entry=readings.find(r=>r.timestamp===hashAction.ts);
     pinFlow(()=>{
@@ -620,17 +596,12 @@ async function init(){
     });
     return;
   }
-
-  // Settings flow
   if(hashAction&&hashAction.action==='settings'){
     pinFlow(()=>showSettingsScreen());
     return;
   }
-
-  // Normal flow
   pinFlow(()=>{showScreen('input-screen');updateReadingDisplay()});
   buildNumpad('input-pad',handleInputKey);
-
   document.getElementById('btn-submit').onclick=handleSubmit;
   document.getElementById('btn-history').onclick=showHistory;
   document.getElementById('btn-back-input').onclick=()=>{showScreen('input-screen');updateReadingDisplay()};
@@ -638,8 +609,6 @@ async function init(){
   document.getElementById('btn-retry').onclick=()=>{showScreen('input-screen');updateReadingDisplay()};
   document.getElementById('btn-confirm-suspicious').onclick=()=>{saveReading(pendingValue,true);pendingValue=null};
   document.getElementById('btn-correct').onclick=()=>{pendingValue=null;showScreen('input-screen');updateReadingDisplay()};
-
-  // Settings
   document.getElementById('btn-save-settings').onclick=()=>{
     const d=document.getElementById('set-date').value;
     const p=parseFloat(document.getElementById('set-price').value);
