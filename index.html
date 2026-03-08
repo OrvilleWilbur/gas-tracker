@@ -1,47 +1,735 @@
-// --- Stats (unified layout) ---
-function showStats(nr){
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Gaszähler</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0f172a;--card:#1e293b;--accent:#3b82f6;--accent2:#10b981;--warn:#f59e0b;--err:#ef4444;--text:#f1f5f9;--muted:#94a3b8;--input-bg:#334155}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;-webkit-tap-highlight-color:transparent}
+.screen{display:none;width:100%;max-width:420px;text-align:center}
+.screen.active{display:flex;flex-direction:column;align-items:center;gap:20px}
+h1{font-size:20px;font-weight:700;letter-spacing:-.5px}
+h2{font-size:16px;font-weight:600;color:var(--muted)}
+.icon{font-size:48px;margin-bottom:8px}
+.pin-dots{display:flex;gap:12px;justify-content:center;margin:12px 0}
+.pin-dot{width:18px;height:18px;border-radius:50%;border:2px solid var(--muted);transition:all .15s}
+.pin-dot.filled{background:var(--accent);border-color:var(--accent)}
+.pin-dot.error{background:var(--err);border-color:var(--err);animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:300px}
+.numpad button{height:64px;border:none;border-radius:14px;background:var(--card);color:var(--text);font-size:26px;font-weight:600;cursor:pointer;transition:all .1s;-webkit-user-select:none;user-select:none}
+.numpad button:active{background:var(--accent);transform:scale(.95)}
+.numpad button.fn{background:transparent;font-size:20px;color:var(--muted)}
+.numpad button.fn:active{background:var(--input-bg)}
+.reading-display{background:var(--card);border-radius:16px;padding:24px;width:100%;position:relative}
+.reading-value{font-size:42px;font-weight:800;font-variant-numeric:tabular-nums;min-height:56px;letter-spacing:1px}
+.reading-unit{font-size:18px;color:var(--muted);font-weight:400}
+.reading-last{font-size:13px;color:var(--muted);margin-top:8px}
+.cursor{animation:blink 1s infinite}
+@keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}}
+.btn{width:100%;max-width:300px;padding:18px;border:none;border-radius:14px;font-size:18px;font-weight:700;cursor:pointer;transition:all .15s}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-success{background:var(--accent2);color:#fff}
+.btn-warn{background:var(--warn);color:#000}
+.btn-err{background:var(--err);color:#fff}
+.btn-ghost{background:transparent;color:var(--muted);font-size:14px;padding:12px}
+.stats{width:100%;display:flex;flex-direction:column;gap:12px}
+.stat-card{background:var(--card);border-radius:14px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center}
+.stat-label{font-size:13px;color:var(--muted);text-align:left}
+.stat-value{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
+.chart-container{background:var(--card);border-radius:14px;padding:16px;width:100%}
+.spinner{width:32px;height:32px;border:3px solid var(--input-bg);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{color:var(--muted);font-size:14px;margin-top:8px}
+.status-msg{padding:12px 16px;border-radius:10px;font-size:14px;width:100%}
+.status-error{background:rgba(239,68,68,.15);color:var(--err)}
+.status-success{background:rgba(16,185,129,.15);color:var(--accent2)}
+.review-value{font-size:48px;font-weight:800;color:var(--warn);margin:8px 0}
+.review-hint{font-size:14px;color:var(--muted);line-height:1.5}
+.modal-buttons{display:flex;flex-direction:column;gap:10px;width:100%;max-width:300px}
+.modal-buttons .btn{padding:16px;font-size:16px}
+.form-group{width:100%;text-align:left}
+.form-label{font-size:13px;color:var(--muted);margin-bottom:4px;display:block}
+.form-input{width:100%;padding:14px 16px;border:2px solid var(--input-bg);border-radius:12px;background:var(--card);color:var(--text);font-size:16px;font-weight:600;outline:none;-webkit-appearance:none}
+.form-input:focus{border-color:var(--accent)}
+.form-hint{font-size:11px;color:var(--muted);margin-top:4px}
+.price-history-item{background:var(--card);border-radius:12px;padding:14px 16px;width:100%;text-align:left}
+.price-history-item .date{font-size:12px;color:var(--accent);font-weight:600}
+.price-history-item .values{font-size:13px;color:var(--text);margin-top:4px;line-height:1.6}
+.price-history-item .note{font-size:11px;color:var(--muted);margin-top:4px;font-style:italic}
+.price-history-item .computed{font-size:14px;font-weight:700;color:var(--accent2);margin-top:6px}
+</style>
+</head>
+<body>
+
+<!-- PIN Screen -->
+<div id="pin-screen" class="screen active">
+  <div class="icon">🔥</div>
+  <h1>Gaszähler</h1>
+  <h2>PIN eingeben</h2>
+  <div class="pin-dots" id="pin-dots">
+    <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+  </div>
+  <div class="numpad" id="pin-pad"></div>
+</div>
+
+<!-- Reading Input -->
+<div id="input-screen" class="screen">
+  <h1>Zählerstand eingeben</h1>
+  <div class="reading-display">
+    <div class="reading-value" id="reading-value"><span class="cursor">|</span></div>
+    <div class="reading-unit">m³</div>
+    <div class="reading-last" id="last-reading-info"></div>
+  </div>
+  <div class="numpad" id="input-pad"></div>
+  <button class="btn btn-primary" id="btn-submit" disabled>Speichern</button>
+  <button class="btn btn-ghost" id="btn-history">Letzte Ablesungen</button>
+</div>
+
+<!-- Review -->
+<div id="review-screen" class="screen">
+  <div class="icon">⚠️</div>
+  <h1>Bitte kontrollieren</h1>
+  <div class="reading-display">
+    <div class="review-value" id="review-value"></div>
+    <div class="reading-unit">m³</div>
+  </div>
+  <div class="review-hint" id="review-hint"></div>
+  <div class="modal-buttons">
+    <button class="btn btn-warn" id="btn-confirm-suspicious">Wert ist korrekt</button>
+    <button class="btn btn-ghost" id="btn-correct">Eingabe korrigieren</button>
+  </div>
+</div>
+
+<!-- Loading -->
+<div id="loading-screen" class="screen">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-text">Wird gespeichert...</div>
+</div>
+
+<!-- Success / Stats -->
+<div id="stats-screen" class="screen">
+  <div class="icon">✅</div>
+  <h1>Danke für die Ablesung!</h1>
+  <div class="stats" id="stats-container"></div>
+  <div class="chart-container" id="chart-container" style="display:none">
+    <h2 style="margin-bottom:12px;text-align:left">Tagesverbrauch kWh/d</h2>
+    <div id="chart-svg"></div>
+  </div>
+  <button class="btn btn-primary" id="btn-new-reading">Neue Ablesung</button>
+</div>
+
+<!-- History -->
+<div id="history-screen" class="screen">
+  <h1>Ablesungen</h1>
+  <div class="stats" id="history-list"></div>
+  <button class="btn btn-ghost" id="btn-back-input">← Zurück</button>
+</div>
+
+<!-- Delete -->
+<div id="delete-screen" class="screen">
+  <div class="icon">🗑️</div>
+  <h1>Ablesung löschen?</h1>
+  <div class="reading-display" id="delete-info"></div>
+  <div class="modal-buttons">
+    <button class="btn btn-err" id="btn-delete-confirm">Endgültig löschen</button>
+    <button class="btn btn-ghost" id="btn-delete-cancel">Abbrechen</button>
+  </div>
+</div>
+
+<div id="delete-done-screen" class="screen">
+  <div class="icon">✅</div>
+  <h1>Gelöscht</h1>
+  <p style="color:var(--muted)">Eintrag entfernt. Aktualisierte E-Mail wird versendet.</p>
+</div>
+
+<!-- Settings -->
+<div id="settings-screen" class="screen">
+  <div class="icon">⚙️</div>
+  <h1>Einstellungen</h1>
+  <h2>Neue Preiswerte eintragen</h2>
+  <div class="form-group">
+    <label class="form-label">Gültig ab</label>
+    <input type="date" class="form-input" id="set-date">
+    <div class="form-hint">Ab wann gelten die neuen Werte?</div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Arbeitspreis brutto (€/kWh)</label>
+    <input type="number" step="0.0001" class="form-input" id="set-price" placeholder="z.B. 0.10436" inputmode="decimal">
+    <div class="form-hint">Arbeitspreis inkl. MwSt aus der Gasrechnung</div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Brennwert (kWh/m³)</label>
+    <input type="number" step="0.001" class="form-input" id="set-brennwert" placeholder="z.B. 11.496" inputmode="decimal">
+    <div class="form-hint">Steht auf der Gasrechnung, ändert sich gelegentlich</div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Zustandszahl</label>
+    <input type="number" step="0.0001" class="form-input" id="set-zustand" placeholder="z.B. 0.8966" inputmode="decimal">
+    <div class="form-hint">Steht auf der Gasrechnung, regional unterschiedlich</div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Notiz (optional)</label>
+    <input type="text" class="form-input" id="set-note" placeholder="z.B. Jahresabrechnung 2026">
+  </div>
+  <button class="btn btn-success" id="btn-save-settings">Speichern</button>
+  <h2 style="margin-top:12px">Preishistorie</h2>
+  <div class="stats" id="price-history-list"></div>
+  <button class="btn btn-ghost" id="btn-back-from-settings">← Zurück</button>
+</div>
+
+<div id="settings-done-screen" class="screen">
+  <div class="icon">✅</div>
+  <h1>Gespeichert!</h1>
+  <p style="color:var(--muted)">Neue Preiswerte werden ab dem angegebenen Datum für Kostenberechnungen verwendet.</p>
+  <button class="btn btn-primary" id="btn-settings-done-back">OK</button>
+</div>
+
+<!-- Error -->
+<div id="error-screen" class="screen">
+  <div class="icon">⚠️</div>
+  <h1>Fehler</h1>
+  <div class="status-msg status-error" id="error-msg"></div>
+  <button class="btn btn-primary" id="btn-retry">Nochmal versuchen</button>
+</div>
+
+<script>
+var CONFIG = {
+  pin:'9999',meter_id:'7ELS2541479709',meter_type:'Itron G4 RF1',initial_reading:0,
+  max_daily_consumption:25,plausibility_factor:3.0,owner:'SWSZ',
+  app_url:'https://orvillewilbur.github.io/gas-tracker/',
+  price_history:[{valid_from:'2023-07-05',gas_price_per_kwh:0.10058,brennwert:11.584,zustandszahl:0.8966}]
+};
+
+var GITHUB_REPO = localStorage.getItem('gt_repo') || '';
+var GITHUB_TOKEN = localStorage.getItem('gt_token') || '';
+var READINGS_PATH = 'readings.json', CONFIG_PATH = 'config.json';
+var readings = [], pinInput = '', readingInput = '', currentSha = '', configSha = '', pendingValue = null;
+
+function getPriceForDate(dateStr) {
+  var ph = CONFIG.price_history || [];
+  var sorted = ph.slice().sort(function(a,b) { return b.valid_from.localeCompare(a.valid_from); });
+  var d = dateStr.substring(0,10);
+  for (var i = 0; i < sorted.length; i++) {
+    if (sorted[i].valid_from <= d) return sorted[i];
+  }
+  return sorted[sorted.length-1] || {gas_price_per_kwh:0,brennwert:0,zustandszahl:0};
+}
+
+function pricePerM3ForDate(dateStr) {
+  var p = getPriceForDate(dateStr);
+  return p.gas_price_per_kwh * p.brennwert * p.zustandszahl;
+}
+
+function m3ToKwh(m3, dateStr) {
+  var p = getPriceForDate(dateStr);
+  return m3 * p.brennwert * p.zustandszahl;
+}
+
+function checkSetup() {
+  var h = window.location.hash;
+  if (h.indexOf('setup=') !== -1) {
+    var p = new URLSearchParams(h.substring(1));
+    var t = p.get('setup'), r = p.get('repo');
+    if (t) { localStorage.setItem('gt_token', t); GITHUB_TOKEN = t; }
+    if (r) { localStorage.setItem('gt_repo', r); GITHUB_REPO = r; }
+    p.delete('setup'); p.delete('repo');
+    var rest = p.toString();
+    if (rest) { window.location.hash = rest; }
+    else { window.location.hash = ''; history.replaceState(null, '', window.location.pathname); }
+  }
+}
+
+function checkHashAction() {
+  var h = window.location.hash;
+  if (h.indexOf('delete=') !== -1) {
+    var p = new URLSearchParams(h.substring(1));
+    var ts = p.get('delete');
+    window.location.hash = '';
+    history.replaceState(null, '', window.location.pathname);
+    return {action:'delete', ts:ts};
+  }
+  if (h.indexOf('settings') !== -1) {
+    window.location.hash = '';
+    history.replaceState(null, '', window.location.pathname);
+    return {action:'settings'};
+  }
+  return null;
+}
+
+function showScreen(id) {
+  var screens = document.querySelectorAll('.screen');
+  for (var i = 0; i < screens.length; i++) screens[i].classList.remove('active');
+  document.getElementById(id).classList.add('active');
+}
+
+function buildNumpad(id, onKey) {
+  var el = document.getElementById(id);
+  var keys = ['1','2','3','4','5','6','7','8','9', id==='input-pad'?',':'', '0', '\u232B'];
+  el.innerHTML = '';
+  keys.forEach(function(k) {
+    var b = document.createElement('button');
+    if (k === '') { b.className = 'fn'; b.disabled = true; b.innerHTML = '&nbsp;'; }
+    else if (k === '\u232B') { b.className = 'fn'; b.textContent = '\u232B'; b.onclick = function() { onKey('del'); }; }
+    else if (k === ',') { b.className = 'fn'; b.textContent = ','; b.onclick = function() { onKey(','); }; }
+    else { b.textContent = k; b.onclick = function() { onKey(this.textContent); }; }
+    el.appendChild(b);
+  });
+}
+
+function updatePinDots(err) {
+  var dots = document.querySelectorAll('#pin-dots .pin-dot');
+  for (var i = 0; i < dots.length; i++) {
+    dots[i].classList.toggle('filled', i < pinInput.length);
+    dots[i].classList.toggle('error', err);
+  }
+}
+
+function getLockout() {
+  try { var d = JSON.parse(localStorage.getItem('gt_lockout') || '{}'); return {fails: d.fails||0, until: d.until||0}; }
+  catch(e) { return {fails:0, until:0}; }
+}
+function setLockout(fails, until) { localStorage.setItem('gt_lockout', JSON.stringify({fails:fails, until:until})); }
+function resetLockout() { localStorage.removeItem('gt_lockout'); }
+function lockoutDuration(fails) {
+  var extra = fails - 3;
+  return 3600000 * Math.pow(2, Math.max(0, extra));
+}
+function formatLockTime(ms) {
+  var m = Math.ceil(ms / 60000);
+  if (m >= 60) { var h = Math.floor(m/60), rm = m%60; return rm > 0 ? h+'h '+rm+'min' : h+'h'; }
+  return m + ' min';
+}
+
+function pinFlow(onSuccess) {
+  pinInput = ''; updatePinDots(false); showScreen('pin-screen');
+  var h2 = document.getElementById('pin-screen').querySelector('h2');
+  var lockTimer = null;
+  function checkLocked() {
+    var lo = getLockout();
+    var remaining = lo.until - Date.now();
+    if (lo.fails >= 3 && remaining > 0) {
+      h2.textContent = 'Gesperrt \u2014 ' + formatLockTime(remaining);
+      h2.style.color = 'var(--err)';
+      if (lockTimer) clearInterval(lockTimer);
+      lockTimer = setInterval(function() {
+        var r2 = lo.until - Date.now();
+        if (r2 <= 0) { clearInterval(lockTimer); h2.textContent = 'PIN eingeben'; h2.style.color = ''; return; }
+        h2.textContent = 'Gesperrt \u2014 ' + formatLockTime(r2);
+      }, 10000);
+      return true;
+    }
+    h2.textContent = 'PIN eingeben'; h2.style.color = '';
+    return false;
+  }
+  checkLocked();
+  buildNumpad('pin-pad', function(key) {
+    if (checkLocked()) return;
+    if (key === 'del') { pinInput = pinInput.slice(0,-1); updatePinDots(false); return; }
+    if (pinInput.length >= 4) return;
+    pinInput += key; updatePinDots(false);
+    if (pinInput.length === 4) {
+      if (pinInput === CONFIG.pin) {
+        resetLockout();
+        if (lockTimer) clearInterval(lockTimer);
+        setTimeout(onSuccess, 200);
+      } else {
+        var lo = getLockout();
+        var newFails = lo.fails + 1;
+        if (newFails >= 3) {
+          var dur = lockoutDuration(newFails);
+          setLockout(newFails, Date.now() + dur);
+        } else {
+          setLockout(newFails, 0);
+        }
+        updatePinDots(true);
+        setTimeout(function() { pinInput = ''; updatePinDots(false); checkLocked(); }, 600);
+      }
+    }
+  });
+}
+
+function updateReadingDisplay() {
+  var el = document.getElementById('reading-value');
+  el.innerHTML = readingInput === '' ? '<span class="cursor">|</span>' : readingInput + '<span class="cursor">|</span>';
+  document.getElementById('btn-submit').disabled = readingInput === '' || readingInput === ',';
+  var last = readings.length > 0 ? readings[readings.length-1] : null;
+  var info = document.getElementById('last-reading-info');
+  if (last) {
+    var d = new Date(last.timestamp);
+    info.textContent = 'Letzter Stand: ' + last.value.toFixed(3) + ' m\u00B3 (' + d.toLocaleDateString('de-DE') + ')';
+  } else {
+    info.textContent = 'Startwert: ' + CONFIG.initial_reading.toFixed(3) + ' m\u00B3';
+  }
+}
+
+function handleInputKey(key) {
+  if (key === 'del') { readingInput = readingInput.slice(0,-1); updateReadingDisplay(); return; }
+  if (key === ',') { if (readingInput.indexOf(',') !== -1 || readingInput === '') return; readingInput += ','; }
+  else {
+    var p = readingInput.split(',');
+    if (p.length > 1 && p[1].length >= 3) return;
+    if (readingInput.replace(',','').length >= 8) return;
+    readingInput += key;
+  }
+  updateReadingDisplay();
+}
+
+function checkPlausibility(val) {
+  var last = readings.length > 0 ? readings[readings.length-1] : null;
+  var lv = last ? last.value : CONFIG.initial_reading;
+  var lt = last ? new Date(last.timestamp) : new Date();
+  if (val <= lv) return {ok:false, error:true, msg:'Neuer Stand (' + val.toFixed(3) + ') muss gr\u00F6\u00DFer sein als letzter Stand (' + lv.toFixed(3) + ').'};
+  var hrs = Math.max(0.1, (Date.now() - lt.getTime()) / 3600000);
+  var days = hrs / 24, cons = val - lv, da = cons / days;
+  var ha = null;
+  var avgs = readings.filter(function(r) { return r.daily_avg != null && !r.suspicious; }).map(function(r) { return r.daily_avg; });
+  if (avgs.length > 0) ha = avgs.reduce(function(a,b) { return a+b; }, 0) / avgs.length;
+  var w = [];
+  if (da > CONFIG.max_daily_consumption) w.push('Tagesverbrauch ' + da.toFixed(2) + ' m\u00B3 \u00FCberschreitet Maximum (' + CONFIG.max_daily_consumption + ' m\u00B3).');
+  if (ha && da > ha * CONFIG.plausibility_factor) w.push('Tagesverbrauch ' + da.toFixed(2) + ' m\u00B3 ist ' + (da/ha).toFixed(1) + 'x h\u00F6her als \u00D8 (' + ha.toFixed(2) + ' m\u00B3).');
+  if (ha && da < ha / CONFIG.plausibility_factor && da > 0) w.push('Tagesverbrauch ' + da.toFixed(3) + ' m\u00B3 ist ungew\u00F6hnlich niedrig (\u00D8 ' + ha.toFixed(2) + ' m\u00B3).');
+  if (w.length > 0) return {ok:false, error:false, msg:w.join('\n')};
+  return {ok:true};
+}
+
+function fetchFile(path) {
+  return fetch('https://api.github.com/repos/' + GITHUB_REPO + '/contents/' + path, {
+    headers: {'Authorization': 'Bearer ' + GITHUB_TOKEN, 'Accept': 'application/vnd.github.v3+json'}
+  }).then(function(r) {
+    if (r.status === 404) return {content:null, sha:null};
+    if (!r.ok) throw new Error('GitHub API: ' + r.status);
+    return r.json().then(function(d) { return {content: JSON.parse(atob(d.content)), sha: d.sha}; });
+  });
+}
+
+function commitFile(path, content, sha, msg) {
+  var body = {
+    message: msg,
+    content: btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2)))),
+    committer: {name: 'Gas Tracker', email: 'gas-tracker@bot.local'}
+  };
+  if (sha) body.sha = sha;
+  return fetch('https://api.github.com/repos/' + GITHUB_REPO + '/contents/' + path, {
+    method: 'PUT',
+    headers: {'Authorization': 'Bearer ' + GITHUB_TOKEN, 'Content-Type': 'application/json'},
+    body: JSON.stringify(body)
+  }).then(function(r) {
+    if (!r.ok) return r.json().then(function(e) { throw new Error(e.message || 'Commit failed: ' + r.status); });
+    return r.json();
+  });
+}
+
+function loadData() {
+  return fetchFile(CONFIG_PATH).then(function(cfg) {
+    if (cfg.content) { Object.assign(CONFIG, cfg.content); configSha = cfg.sha; }
+    return fetchFile(READINGS_PATH);
+  }).then(function(rd) {
+    if (rd.content) { readings = rd.content.readings || []; currentSha = rd.sha; }
+  }).catch(function(e) { console.error('Laden:', e); });
+}
+
+function saveReading(value, suspicious) {
+  showScreen('loading-screen');
+  document.getElementById('loading-text').textContent = 'Wird gespeichert...';
+  fetchFile(READINGS_PATH).then(function(rd) {
+    if (rd.content) { readings = rd.content.readings || []; currentSha = rd.sha; }
+    var last = readings.length > 0 ? readings[readings.length-1] : null;
+    var lv = last ? last.value : CONFIG.initial_reading;
+    var lt = last ? new Date(last.timestamp).getTime() : Date.now();
+    var cons = value - lv;
+    var hrs = Math.max(0.1, (Date.now() - lt) / 3600000);
+    var days = hrs / 24, da = cons / days;
+    var nr = {
+      timestamp: new Date().toISOString(), value: value,
+      consumption: Math.round(cons*1000)/1000,
+      days_since_last: Math.round(days*100)/100,
+      daily_avg: Math.round(da*1000)/1000,
+      suspicious: suspicious
+    };
+    readings.push(nr);
+    var dateStr = new Date().toLocaleDateString('de-DE');
+    var msg = 'Ablesung ' + dateStr + ': ' + value.toFixed(3) + ' m\u00B3' + (suspicious ? ' \u26A0\uFE0F' : '');
+    return commitFile(READINGS_PATH, {meter_id: CONFIG.meter_id, readings: readings}, currentSha, msg).then(function() {
+      showStats(nr);
+    });
+  }).catch(function(e) {
+    document.getElementById('error-msg').textContent = e.message;
+    showScreen('error-screen');
+  });
+}
+
+function deleteReading(ts) {
+  showScreen('loading-screen');
+  document.getElementById('loading-text').textContent = 'Wird gel\u00F6scht...';
+  fetchFile(READINGS_PATH).then(function(rd) {
+    if (rd.content) { readings = rd.content.readings || []; currentSha = rd.sha; }
+    var idx = -1;
+    for (var i = 0; i < readings.length; i++) { if (readings[i].timestamp === ts) { idx = i; break; } }
+    if (idx === -1) throw new Error('Nicht gefunden.');
+    var rm = readings.splice(idx, 1)[0];
+    var dateStr = new Date(rm.timestamp).toLocaleDateString('de-DE');
+    var msg = 'Gel\u00F6scht: ' + rm.value.toFixed(3) + ' m\u00B3 vom ' + dateStr;
+    return commitFile(READINGS_PATH, {meter_id: CONFIG.meter_id, readings: readings}, currentSha, msg);
+  }).then(function() {
+    showScreen('delete-done-screen');
+  }).catch(function(e) {
+    document.getElementById('error-msg').textContent = e.message;
+    showScreen('error-screen');
+  });
+}
+
+function saveSettings(newEntry) {
+  showScreen('loading-screen');
+  document.getElementById('loading-text').textContent = 'Einstellungen werden gespeichert...';
+  fetchFile(CONFIG_PATH).then(function(cfg) {
+    if (cfg.content) { Object.assign(CONFIG, cfg.content); configSha = cfg.sha; }
+    if (!CONFIG.price_history) CONFIG.price_history = [];
+    CONFIG.price_history.push(newEntry);
+    CONFIG.price_history.sort(function(a,b) { return a.valid_from.localeCompare(b.valid_from); });
+    return commitFile(CONFIG_PATH, CONFIG, configSha, 'Preis\u00E4nderung ab ' + newEntry.valid_from);
+  }).then(function() {
+    showScreen('settings-done-screen');
+  }).catch(function(e) {
+    document.getElementById('error-msg').textContent = e.message;
+    showScreen('error-screen');
+  });
+}
+
+function showStats(nr) {
   showScreen('stats-screen');
-  const c=document.getElementById('stats-container');
-  const p=getPriceForDate(nr.timestamp);
-  const kwh=nr.consumption*p.brennwert*p.zustandszahl;
-  const pm3=p.gas_price_per_kwh*p.brennwert*p.zustandszahl;
-  const costs=nr.consumption*pm3;
-  const costsDay=nr.days_since_last>0?costs/nr.days_since_last:0;
-  const kwhDay=nr.days_since_last>0?kwh/nr.days_since_last:0;
-  const m3Day=nr.days_since_last>0?nr.consumption/nr.days_since_last:0;
-  const last=readings.length>=2?readings[readings.length-2]:null;
-  const lastDate=last?new Date(last.timestamp).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'})+' '+new Date(last.timestamp).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}):'—';
-  const lastValue=last?last.value.toFixed(3)+' m³':'—';
-  const nowDate=new Date(nr.timestamp);
-  const nowStr=nowDate.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'})+' '+nowDate.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
-  const sus=nr.suspicious?'<div style="background:rgba(245,158,11,.15);color:var(--warn);padding:10px;border-radius:10px;font-size:13px;margin-bottom:8px">⚠️ Wert als verdächtig markiert</div>':'';
-  c.innerHTML=`${sus}
-    <div class="stat-card" style="flex-direction:column;align-items:stretch">
-      <div style="font-size:13px;color:var(--muted)">Neuer Zählerstand</div>
-      <div class="stat-value" style="font-size:28px;margin-top:6px">${nr.value.toFixed(3)} <span class="reading-unit">m³</span></div>
-      <div style="font-size:12px;color:var(--muted);margin-top:4px">${nowStr}</div>
-    </div>
-    <div class="stat-card" style="flex-direction:column;align-items:stretch">
-      <div style="font-size:13px;color:var(--muted)">Letzte Ablesung</div>
-      <div style="font-size:18px;font-weight:800;margin-top:6px">${lastValue}</div>
-      <div style="font-size:12px;color:var(--muted);margin-top:4px">${lastDate}</div>
-    </div>
-    <div class="stat-card"><div class="stat-label">Zeitraum</div><div class="stat-value">${nr.days_since_last.toFixed(0)} <span style="font-size:14px;color:var(--muted)">Tage</span></div></div>
-    <div class="stat-card" style="flex-direction:column;align-items:stretch;gap:6px">
-      <div style="font-size:13px;color:var(--muted)">Verbrauch seit letzter Ablesung in Summe</div>
-      <div style="display:flex;justify-content:space-between;align-items:baseline">
-        <div><span style="font-size:20px;font-weight:800">${nr.consumption.toFixed(3)}</span> <span style="color:var(--muted)">m³</span></div>
-        <div><span style="font-size:20px;font-weight:800">${kwh.toFixed(1)}</span> <span style="color:var(--muted)">kWh</span></div>
-        <div><span style="font-size:20px;font-weight:800">${costs.toFixed(2)}</span> <span style="color:var(--muted)">€</span></div>
-      </div>
-    </div>
-    <div class="stat-card" style="flex-direction:column;align-items:stretch;gap:6px">
-      <div style="font-size:13px;color:var(--muted)">Verbrauch seit letzter Ablesung Ø pro Tag</div>
-      <div style="display:flex;justify-content:space-between;align-items:baseline">
-        <div><span style="font-size:20px;font-weight:800">${m3Day.toFixed(2)}</span> <span style="color:var(--muted)">m³</span></div>
-        <div><span style="font-size:20px;font-weight:800">${kwhDay.toFixed(1)}</span> <span style="color:var(--muted)">kWh</span></div>
-        <div><span style="font-size:20px;font-weight:800">${costsDay.toFixed(2)}</span> <span style="color:var(--muted)">€</span></div>
-      </div>
-    </div>`;
+  var c = document.getElementById('stats-container');
+  var p = getPriceForDate(nr.timestamp);
+  var kwh = nr.consumption * p.brennwert * p.zustandszahl;
+  var pm3 = p.gas_price_per_kwh * p.brennwert * p.zustandszahl;
+  var costs = nr.consumption * pm3;
+  var costsDay = nr.days_since_last > 0 ? costs / nr.days_since_last : 0;
+  var kwhDay = nr.days_since_last > 0 ? kwh / nr.days_since_last : 0;
+  var m3Day = nr.days_since_last > 0 ? nr.consumption / nr.days_since_last : 0;
+  var last = readings.length >= 2 ? readings[readings.length-2] : null;
+  var lastDate = last ? new Date(last.timestamp).toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' + new Date(last.timestamp).toLocaleTimeString('de-DE', {hour:'2-digit',minute:'2-digit'}) : '\u2014';
+  var lastValue = last ? last.value.toFixed(3) + ' m\u00B3' : '\u2014';
+  var nowDate = new Date(nr.timestamp);
+  var nowStr = nowDate.toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' + nowDate.toLocaleTimeString('de-DE', {hour:'2-digit',minute:'2-digit'});
+  var sus = nr.suspicious ? '<div style="background:rgba(245,158,11,.15);color:var(--warn);padding:10px;border-radius:10px;font-size:13px;margin-bottom:8px">\u26A0\uFE0F Wert als verd\u00E4chtig markiert</div>' : '';
+
+  var html = sus;
+  html += '<div class="stat-card" style="flex-direction:column;align-items:stretch">';
+  html += '<div style="font-size:13px;color:var(--muted)">Neuer Z\u00E4hlerstand</div>';
+  html += '<div class="stat-value" style="font-size:28px;margin-top:6px">' + nr.value.toFixed(3) + ' <span class="reading-unit">m\u00B3</span></div>';
+  html += '<div style="font-size:12px;color:var(--muted);margin-top:4px">' + nowStr + '</div>';
+  html += '</div>';
+
+  html += '<div class="stat-card" style="flex-direction:column;align-items:stretch">';
+  html += '<div style="font-size:13px;color:var(--muted)">Letzte Ablesung</div>';
+  html += '<div style="font-size:18px;font-weight:800;margin-top:6px">' + lastValue + '</div>';
+  html += '<div style="font-size:12px;color:var(--muted);margin-top:4px">' + lastDate + '</div>';
+  html += '</div>';
+
+  html += '<div class="stat-card">';
+  html += '<div class="stat-label">Zeitraum</div>';
+  html += '<div class="stat-value">' + nr.days_since_last.toFixed(0) + ' <span style="font-size:14px;color:var(--muted)">Tage</span></div>';
+  html += '</div>';
+
+  html += '<div class="stat-card" style="flex-direction:column;align-items:stretch;gap:6px">';
+  html += '<div style="font-size:13px;color:var(--muted)">Verbrauch seit letzter Ablesung in Summe</div>';
+  html += '<div style="display:flex;justify-content:space-between;align-items:baseline">';
+  html += '<div><span style="font-size:20px;font-weight:800">' + nr.consumption.toFixed(3) + '</span> <span style="color:var(--muted)">m\u00B3</span></div>';
+  html += '<div><span style="font-size:20px;font-weight:800">' + kwh.toFixed(1) + '</span> <span style="color:var(--muted)">kWh</span></div>';
+  html += '<div><span style="font-size:20px;font-weight:800">' + costs.toFixed(2) + '</span> <span style="color:var(--muted)">\u20AC</span></div>';
+  html += '</div></div>';
+
+  html += '<div class="stat-card" style="flex-direction:column;align-items:stretch;gap:6px">';
+  html += '<div style="font-size:13px;color:var(--muted)">Verbrauch seit letzter Ablesung \u00D8 pro Tag</div>';
+  html += '<div style="display:flex;justify-content:space-between;align-items:baseline">';
+  html += '<div><span style="font-size:20px;font-weight:800">' + m3Day.toFixed(2) + '</span> <span style="color:var(--muted)">m\u00B3</span></div>';
+  html += '<div><span style="font-size:20px;font-weight:800">' + kwhDay.toFixed(1) + '</span> <span style="color:var(--muted)">kWh</span></div>';
+  html += '<div><span style="font-size:20px;font-weight:800">' + costsDay.toFixed(2) + '</span> <span style="color:var(--muted)">\u20AC</span></div>';
+  html += '</div></div>';
+
+  c.innerHTML = html;
   buildChart();
 }
+
+function buildChart() {
+  var cc = document.getElementById('chart-container');
+  var svgEl = document.getElementById('chart-svg');
+  var dp = readings.filter(function(r) { return r.daily_avg != null; });
+  if (dp.length < 2) { cc.style.display = 'none'; return; }
+  cc.style.display = 'block';
+  var W = 380, H = 180, padT = 20, padR = 15, padB = 36, padL = 42;
+  var cw = W - padL - padR, ch = H - padT - padB;
+  var pts = dp.map(function(r) {
+    var p = getPriceForDate(r.timestamp);
+    return {date: new Date(r.timestamp), val: r.daily_avg * p.brennwert * p.zustandszahl};
+  });
+  var minT = pts[0].date.getTime(), maxT = pts[pts.length-1].date.getTime();
+  var maxV = Math.max.apply(null, pts.map(function(p) { return p.val; })) * 1.15;
+  function x(d) { return padL + (maxT === minT ? cw/2 : ((d.getTime()-minT)/(maxT-minT))*cw); }
+  function y(v) { return padT + ch - (v/maxV)*ch; }
+
+  var line = pts.map(function(p, i) {
+    return (i === 0 ? 'M' : 'L') + x(p.date).toFixed(1) + ',' + y(p.val).toFixed(1);
+  }).join(' ');
+  var area = line + ' L' + x(pts[pts.length-1].date).toFixed(1) + ',' + (padT+ch).toFixed(1) + ' L' + x(pts[0].date).toFixed(1) + ',' + (padT+ch).toFixed(1) + ' Z';
+
+  var ySteps = 4;
+  var yLabels = '';
+  for (var i = 0; i <= ySteps; i++) {
+    var v = (maxV / ySteps) * i;
+    var yy = y(v);
+    yLabels += '<text x="' + (padL-6) + '" y="' + (yy+4) + '" text-anchor="end" fill="#94a3b8" font-size="10">' + v.toFixed(0) + '</text>';
+    if (i > 0) yLabels += '<line x1="' + padL + '" y1="' + yy + '" x2="' + (W-padR) + '" y2="' + yy + '" stroke="#334155" stroke-width="0.5"/>';
+  }
+
+  var xLabels = '';
+  var labelCount = Math.min(pts.length, 6);
+  var step = Math.max(1, Math.floor((pts.length-1)/(labelCount-1)));
+  var labeled = {};
+  for (var j = 0; j < pts.length; j += step) labeled[j] = true;
+  labeled[pts.length-1] = true;
+  for (var idx in labeled) {
+    var pt = pts[idx], dt = pt.date;
+    var label = dt.getDate() + '.' + (dt.getMonth()+1) + '.' + String(dt.getFullYear()).slice(2);
+    xLabels += '<text x="' + x(dt).toFixed(1) + '" y="' + (H-4) + '" text-anchor="middle" fill="#94a3b8" font-size="9">' + label + '</text>';
+  }
+
+  var dots = '';
+  pts.forEach(function(p) {
+    var cx = x(p.date), cy = y(p.val);
+    dots += '<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="3.5" fill="#3b82f6" stroke="#0f172a" stroke-width="1.5"/>';
+    dots += '<text x="' + cx.toFixed(1) + '" y="' + (cy-8).toFixed(1) + '" text-anchor="middle" fill="#f1f5f9" font-size="9" font-weight="600">' + p.val.toFixed(1) + '</text>';
+  });
+
+  svgEl.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" xmlns="http://www.w3.org/2000/svg">' +
+    '<defs><linearGradient id="areaG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3b82f6" stop-opacity="0.3"/><stop offset="100%" stop-color="#3b82f6" stop-opacity="0.02"/></linearGradient></defs>' +
+    yLabels +
+    '<line x1="' + padL + '" y1="' + (padT+ch) + '" x2="' + (W-padR) + '" y2="' + (padT+ch) + '" stroke="#334155" stroke-width="1"/>' +
+    '<path d="' + area + '" fill="url(#areaG)"/>' +
+    '<path d="' + line + '" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+    dots + xLabels +
+    '</svg>';
+}
+
+function showHistory() {
+  showScreen('history-screen');
+  var list = document.getElementById('history-list');
+  var items = readings.slice().reverse().slice(0, 20);
+  var html = '';
+  items.forEach(function(r) {
+    var d = new Date(r.timestamp);
+    var dt = d.toLocaleDateString('de-DE');
+    var tm = d.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
+    var f = r.suspicious ? ' \u26A0\uFE0F' : '';
+    if (r.consumption == null) {
+      html += '<div class="stat-card"><div><div class="stat-label">' + dt + ' ' + tm + f + '</div><div style="font-size:13px;color:var(--muted);margin-top:2px">Startwert</div></div><div class="stat-value" style="font-size:18px">' + r.value.toFixed(3) + '</div></div>';
+    } else {
+      var kwh = m3ToKwh(r.consumption, r.timestamp);
+      html += '<div class="stat-card"><div><div class="stat-label">' + dt + ' ' + tm + f + '</div><div style="font-size:13px;color:var(--muted);margin-top:2px">+' + kwh.toFixed(1) + ' kWh \u00B7 +' + r.consumption.toFixed(3) + ' m\u00B3</div></div><div class="stat-value" style="font-size:18px">' + r.value.toFixed(3) + '</div></div>';
+    }
+  });
+  list.innerHTML = html || '<div class="status-msg" style="color:var(--muted)">Noch keine Ablesungen.</div>';
+}
+
+function showSettingsScreen() {
+  showScreen('settings-screen');
+  var cur = getPriceForDate(new Date().toISOString());
+  document.getElementById('set-date').value = new Date().toISOString().substring(0,10);
+  document.getElementById('set-price').value = cur.gas_price_per_kwh;
+  document.getElementById('set-brennwert').value = cur.brennwert;
+  document.getElementById('set-zustand').value = cur.zustandszahl;
+  document.getElementById('set-note').value = '';
+  var list = document.getElementById('price-history-list');
+  var ph = (CONFIG.price_history || []).slice().reverse();
+  var phHtml = '';
+  ph.forEach(function(e) {
+    var pm3 = e.gas_price_per_kwh * e.brennwert * e.zustandszahl;
+    phHtml += '<div class="price-history-item">';
+    phHtml += '<div class="date">G\u00FCltig ab ' + e.valid_from + '</div>';
+    phHtml += '<div class="values">AP brutto: ' + e.gas_price_per_kwh + ' \u20AC/kWh \u00B7 BW: ' + e.brennwert + ' kWh/m\u00B3 \u00B7 ZZ: ' + e.zustandszahl + '</div>';
+    phHtml += '<div class="computed">\u2192 ' + pm3.toFixed(4) + ' \u20AC/m\u00B3 \u00B7 Umrechnung: ' + (e.brennwert * e.zustandszahl).toFixed(4) + ' kWh/m\u00B3</div>';
+    if (e.note) phHtml += '<div class="note">' + e.note + '</div>';
+    phHtml += '</div>';
+  });
+  list.innerHTML = phHtml;
+}
+
+function handleSubmit() {
+  var v = parseFloat(readingInput.replace(',', '.'));
+  if (isNaN(v)) return;
+  var chk = checkPlausibility(v);
+  if (chk.error) { document.getElementById('error-msg').textContent = chk.msg; showScreen('error-screen'); return; }
+  if (!chk.ok) {
+    pendingValue = v;
+    document.getElementById('review-value').textContent = readingInput;
+    document.getElementById('review-hint').textContent = chk.msg;
+    showScreen('review-screen');
+    return;
+  }
+  saveReading(v, false);
+}
+
+function init() {
+  checkSetup();
+  if (!GITHUB_TOKEN || !GITHUB_REPO) {
+    document.getElementById('pin-screen').querySelector('h2').textContent = 'Setup fehlt! Bitte Admin-Link verwenden.';
+    return;
+  }
+  var hashAction = checkHashAction();
+  loadData().then(function() {
+    if (hashAction && hashAction.action === 'delete') {
+      var entry = null;
+      for (var i = 0; i < readings.length; i++) { if (readings[i].timestamp === hashAction.ts) { entry = readings[i]; break; } }
+      pinFlow(function() {
+        if (!entry) { document.getElementById('error-msg').textContent = 'Eintrag nicht gefunden.'; showScreen('error-screen'); return; }
+        var d = new Date(entry.timestamp);
+        var info = '<div class="review-value" style="color:var(--err)">' + entry.value.toFixed(3) + '</div>';
+        info += '<div class="reading-unit">m\u00B3</div>';
+        info += '<div class="reading-last">' + d.toLocaleDateString('de-DE') + ' ' + d.toLocaleTimeString('de-DE', {hour:'2-digit',minute:'2-digit'});
+        if (entry.suspicious) info += ' \u2014 \u26A0\uFE0F verd\u00E4chtig';
+        info += '</div>';
+        document.getElementById('delete-info').innerHTML = info;
+        document.getElementById('btn-delete-confirm').onclick = function() { deleteReading(hashAction.ts); };
+        document.getElementById('btn-delete-cancel').onclick = function() { readingInput = ''; showScreen('input-screen'); updateReadingDisplay(); };
+        showScreen('delete-screen');
+      });
+      return;
+    }
+    if (hashAction && hashAction.action === 'settings') {
+      pinFlow(function() { showSettingsScreen(); });
+      return;
+    }
+    pinFlow(function() { showScreen('input-screen'); updateReadingDisplay(); });
+    buildNumpad('input-pad', handleInputKey);
+    document.getElementById('btn-submit').onclick = handleSubmit;
+    document.getElementById('btn-history').onclick = showHistory;
+    document.getElementById('btn-back-input').onclick = function() { showScreen('input-screen'); updateReadingDisplay(); };
+    document.getElementById('btn-new-reading').onclick = function() { readingInput = ''; showScreen('input-screen'); updateReadingDisplay(); };
+    document.getElementById('btn-retry').onclick = function() { showScreen('input-screen'); updateReadingDisplay(); };
+    document.getElementById('btn-confirm-suspicious').onclick = function() { saveReading(pendingValue, true); pendingValue = null; };
+    document.getElementById('btn-correct').onclick = function() { pendingValue = null; showScreen('input-screen'); updateReadingDisplay(); };
+    document.getElementById('btn-save-settings').onclick = function() {
+      var d = document.getElementById('set-date').value;
+      var p = parseFloat(document.getElementById('set-price').value);
+      var b = parseFloat(document.getElementById('set-brennwert').value);
+      var z = parseFloat(document.getElementById('set-zustand').value);
+      var n = document.getElementById('set-note').value;
+      if (!d || isNaN(p) || isNaN(b) || isNaN(z)) { alert('Bitte alle Felder ausf\u00FCllen.'); return; }
+      var entry = {valid_from:d, gas_price_per_kwh:p, brennwert:b, zustandszahl:z};
+      if (n) entry.note = n;
+      saveSettings(entry);
+    };
+    document.getElementById('btn-back-from-settings').onclick = function() { showScreen('input-screen'); updateReadingDisplay(); };
+    document.getElementById('btn-settings-done-back').onclick = function() { readingInput = ''; showScreen('input-screen'); updateReadingDisplay(); };
+  });
+}
+
+init();
+</script>
+</body>
+</html>
