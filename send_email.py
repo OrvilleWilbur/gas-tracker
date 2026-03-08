@@ -146,9 +146,11 @@ def build_email_html(readings, cfg):
     prev = readings[-2] if len(readings) >= 2 else None
     if prev:
         prev_ts = datetime.fromisoformat(prev["timestamp"])
-        prev_str = f"{prev['value']:.3f} m³ — {prev_ts.strftime('%d.%m.%Y %H:%M')}"
+        prev_value = f"{prev['value']:.3f} m³"
+        prev_date = prev_ts.strftime("%d.%m.%Y %H:%M")
     else:
-        prev_str = "—"
+        prev_value = "—"
+        prev_date = ""
 
     days_str = f"{days:.0f}" if days else "—"
 
@@ -217,16 +219,15 @@ def build_email_html(readings, cfg):
   <!-- 1. Neuer Zählerstand -->
   <div style="background:#f8fafc;border-radius:12px;padding:16px;margin-bottom:12px;">
     <div style="font-size:12px;color:#64748b;">Neuer Zählerstand</div>
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:4px;">
-      <div style="font-size:26px;font-weight:800;color:#1e40af;">{latest['value']:.3f} m³</div>
-      <div style="font-size:13px;color:#94a3b8;">{now_str}</div>
-    </div>
+    <div style="font-size:28px;font-weight:800;color:#1e40af;margin-top:6px;">{latest['value']:.3f} m³</div>
+    <div style="font-size:13px;color:#94a3b8;margin-top:4px;">{now_str}</div>
   </div>
 
   <!-- 2. Letzter Zählerstand -->
   <div style="background:#f8fafc;border-radius:12px;padding:16px;margin-bottom:12px;">
     <div style="font-size:12px;color:#64748b;">Letzte Ablesung</div>
-    <div style="font-size:16px;font-weight:600;color:#334155;margin-top:4px;">{prev_str}</div>
+    <div style="font-size:18px;font-weight:700;color:#334155;margin-top:6px;">{prev_value}</div>
+    <div style="font-size:13px;color:#94a3b8;margin-top:4px;">{prev_date}</div>
   </div>
 
   <!-- 3. Zeitraum -->
@@ -237,7 +238,7 @@ def build_email_html(readings, cfg):
 
   <!-- 4. Verbrauch absolut -->
   <div style="background:#f8fafc;border-radius:12px;padding:16px;margin-bottom:12px;">
-    <div style="font-size:12px;color:#64748b;margin-bottom:8px;">Verbrauch seit letzter Ablesung</div>
+    <div style="font-size:12px;color:#64748b;margin-bottom:8px;">Verbrauch seit letzter Ablesung in Summe</div>
     <table style="width:100%;border-collapse:collapse;">
       <tr>
         <td style="text-align:center;padding:4px;"><span style="font-size:20px;font-weight:800;">{cons_m3}</span> <span style="color:#94a3b8;font-size:12px;">m³</span></td>
@@ -249,7 +250,7 @@ def build_email_html(readings, cfg):
 
   <!-- 5. Verbrauch pro Tag -->
   <div style="background:#f8fafc;border-radius:12px;padding:16px;margin-bottom:12px;">
-    <div style="font-size:12px;color:#64748b;margin-bottom:8px;">Ø pro Tag</div>
+    <div style="font-size:12px;color:#64748b;margin-bottom:8px;">Verbrauch seit letzter Ablesung Ø pro Tag</div>
     <table style="width:100%;border-collapse:collapse;">
       <tr>
         <td style="text-align:center;padding:4px;"><span style="font-size:20px;font-weight:800;">{m3_day}</span> <span style="color:#94a3b8;font-size:12px;">m³</span></td>
