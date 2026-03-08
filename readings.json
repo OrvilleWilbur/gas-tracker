@@ -56,14 +56,6 @@
       "days_since_last": 76,
       "daily_avg": 11.803,
       "suspicious": false
-    },
-    {
-      "timestamp": "2026-03-08T16:15:47.244Z",
-      "value": 8050.333,
-      "consumption": 1233.333,
-      "days_since_last": 91.22,
-      "daily_avg": 13.521,
-      "suspicious": false
     }
   ]
 }
