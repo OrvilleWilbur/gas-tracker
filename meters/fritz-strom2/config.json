@@ -1,0 +1,9 @@
+{
+  "meter_id": "3642841",
+  "type": "strom",
+  "initial_reading": 0,
+  "max_daily_consumption": 100,
+  "plausibility_factor": 3.0,
+  "owner": "TEAG",
+  "price_history": []
+}

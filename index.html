@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Gaszähler</title>
+<title>Zähler-Tracker</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#0f172a;--card:#1e293b;--accent:#3b82f6;--accent2:#10b981;--warn:#f59e0b;--err:#ef4444;--text:#f1f5f9;--muted:#94a3b8;--input-bg:#334155}
+:root{--bg:#0f172a;--card:#1e293b;--accent:#3b82f6;--accent2:#10b981;--warn:#f59e0b;--err:#ef4444;--text:#f1f5f9;--muted:#94a3b8;--input-bg:#334155;--gas:#f59e0b;--strom:#3b82f6;--wasser:#06b6d4}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;-webkit-tap-highlight-color:transparent}
 .screen{display:none;width:100%;max-width:420px;text-align:center}
 .screen.active{display:flex;flex-direction:column;align-items:center;gap:20px}
@@ -25,6 +25,26 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
 .numpad button:active{background:var(--accent);transform:scale(.95)}
 .numpad button.fn{background:transparent;font-size:20px;color:var(--muted)}
 .numpad button.fn:active{background:var(--input-bg)}
+.meter-list{width:100%;max-height:75vh;overflow-y:auto;display:flex;flex-direction:column;gap:4px}
+.property-group{width:100%;margin-bottom:14px}
+.property-header{font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px;text-align:left;padding-left:4px;text-transform:uppercase;letter-spacing:.5px}
+.meter-card{background:var(--card);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .15s;border-left:3px solid transparent;margin-bottom:6px}
+.meter-card:active{transform:scale(.97);opacity:.8}
+.meter-card[data-type="gas"]{border-left-color:var(--gas)}
+.meter-card[data-type="strom"]{border-left-color:var(--strom)}
+.meter-card[data-type="wasser"]{border-left-color:var(--wasser)}
+.mc-icon{font-size:24px;width:32px;text-align:center;flex-shrink:0}
+.mc-info{flex:1;text-align:left;min-width:0}
+.mc-name{font-size:15px;font-weight:700}
+.mc-nr{font-size:11px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mc-last{text-align:right;flex-shrink:0}
+.mc-last-val{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+.mc-last-date{font-size:10px;color:var(--muted);margin-top:1px}
+.meter-header{display:flex;align-items:center;gap:8px;width:100%;padding:10px 14px;background:var(--card);border-radius:10px}
+.mh-icon{font-size:20px}
+.mh-name{flex:1;font-size:13px;font-weight:600;text-align:left;color:var(--muted)}
+.mh-btn{background:none;border:1px solid var(--input-bg);color:var(--muted);padding:4px 10px;border-radius:8px;font-size:11px;cursor:pointer;transition:all .15s}
+.mh-btn:active{background:var(--input-bg)}
 .reading-display{background:var(--card);border-radius:16px;padding:24px;width:100%;position:relative}
 .reading-value{font-size:42px;font-weight:800;font-variant-numeric:tabular-nums;min-height:56px;letter-spacing:1px}
 .reading-unit{font-size:18px;color:var(--muted);font-weight:400}
@@ -48,7 +68,6 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
 .loading-text{color:var(--muted);font-size:14px;margin-top:8px}
 .status-msg{padding:12px 16px;border-radius:10px;font-size:14px;width:100%}
 .status-error{background:rgba(239,68,68,.15);color:var(--err)}
-.status-success{background:rgba(16,185,129,.15);color:var(--accent2)}
 .review-value{font-size:48px;font-weight:800;color:var(--warn);margin:8px 0}
 .review-hint{font-size:14px;color:var(--muted);line-height:1.5}
 .modal-buttons{display:flex;flex-direction:column;gap:10px;width:100%;max-width:300px}
@@ -69,8 +88,8 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
 
 <!-- PIN Screen -->
 <div id="pin-screen" class="screen active">
-  <div class="icon">🔥</div>
-  <h1>Gaszähler</h1>
+  <div class="icon">🏠</div>
+  <h1>Zähler-Tracker</h1>
   <h2>PIN eingeben</h2>
   <div class="pin-dots" id="pin-dots">
     <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
@@ -78,12 +97,23 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
   <div class="numpad" id="pin-pad"></div>
 </div>
 
+<!-- Meter Selection -->
+<div id="meter-screen" class="screen">
+  <h1>Zähler wählen</h1>
+  <div class="meter-list" id="meter-list"></div>
+</div>
+
 <!-- Reading Input -->
 <div id="input-screen" class="screen">
+  <div class="meter-header">
+    <span class="mh-icon" id="input-mh-icon"></span>
+    <span class="mh-name" id="input-mh-name"></span>
+    <button class="mh-btn" onclick="goToMeterSelect()">Wechseln</button>
+  </div>
   <h1>Zählerstand eingeben</h1>
   <div class="reading-display">
     <div class="reading-value" id="reading-value"><span class="cursor">|</span></div>
-    <div class="reading-unit">m³</div>
+    <div class="reading-unit" id="reading-unit-display">m³</div>
     <div class="reading-last" id="last-reading-info"></div>
   </div>
   <div class="numpad" id="input-pad"></div>
@@ -97,7 +127,7 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
   <h1>Bitte kontrollieren</h1>
   <div class="reading-display">
     <div class="review-value" id="review-value"></div>
-    <div class="reading-unit">m³</div>
+    <div class="reading-unit" id="review-unit">m³</div>
   </div>
   <div class="review-hint" id="review-hint"></div>
   <div class="modal-buttons">
@@ -112,20 +142,25 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
   <div class="loading-text" id="loading-text">Wird gespeichert...</div>
 </div>
 
-<!-- Success / Stats -->
+<!-- Stats -->
 <div id="stats-screen" class="screen">
   <div class="icon">✅</div>
   <h1>Danke für die Ablesung!</h1>
   <div class="stats" id="stats-container"></div>
   <div class="chart-container" id="chart-container" style="display:none">
-    <h2 style="margin-bottom:12px;text-align:left">Tagesverbrauch kWh/d</h2>
+    <h2 id="chart-title" style="margin-bottom:12px;text-align:left">Tagesverbrauch</h2>
     <div id="chart-svg"></div>
   </div>
   <button class="btn btn-primary" id="btn-new-reading">Neue Ablesung</button>
+  <button class="btn btn-ghost" onclick="goToMeterSelect()">Anderer Zähler</button>
 </div>
 
 <!-- History -->
 <div id="history-screen" class="screen">
+  <div class="meter-header">
+    <span class="mh-icon" id="hist-mh-icon"></span>
+    <span class="mh-name" id="hist-mh-name"></span>
+  </div>
   <h1>Ablesungen</h1>
   <div class="stats" id="history-list"></div>
   <button class="btn btn-ghost" id="btn-back-input">← Zurück</button>
@@ -145,38 +180,15 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
 <div id="delete-done-screen" class="screen">
   <div class="icon">✅</div>
   <h1>Gelöscht</h1>
-  <p style="color:var(--muted)">Eintrag entfernt. Aktualisierte E-Mail wird versendet.</p>
+  <p style="color:var(--muted)">Eintrag entfernt.</p>
 </div>
 
 <!-- Settings -->
 <div id="settings-screen" class="screen">
   <div class="icon">⚙️</div>
-  <h1>Einstellungen</h1>
+  <h1 id="settings-title">Einstellungen</h1>
   <h2>Neue Preiswerte eintragen</h2>
-  <div class="form-group">
-    <label class="form-label">Gültig ab</label>
-    <input type="date" class="form-input" id="set-date">
-    <div class="form-hint">Ab wann gelten die neuen Werte?</div>
-  </div>
-  <div class="form-group">
-    <label class="form-label">Arbeitspreis brutto (€/kWh)</label>
-    <input type="number" step="0.0001" class="form-input" id="set-price" placeholder="z.B. 0.10436" inputmode="decimal">
-    <div class="form-hint">Arbeitspreis inkl. MwSt aus der Gasrechnung</div>
-  </div>
-  <div class="form-group">
-    <label class="form-label">Brennwert (kWh/m³)</label>
-    <input type="number" step="0.001" class="form-input" id="set-brennwert" placeholder="z.B. 11.496" inputmode="decimal">
-    <div class="form-hint">Steht auf der Gasrechnung, ändert sich gelegentlich</div>
-  </div>
-  <div class="form-group">
-    <label class="form-label">Zustandszahl</label>
-    <input type="number" step="0.0001" class="form-input" id="set-zustand" placeholder="z.B. 0.8966" inputmode="decimal">
-    <div class="form-hint">Steht auf der Gasrechnung, regional unterschiedlich</div>
-  </div>
-  <div class="form-group">
-    <label class="form-label">Notiz (optional)</label>
-    <input type="text" class="form-input" id="set-note" placeholder="z.B. Jahresabrechnung 2026">
-  </div>
+  <div id="settings-form" style="width:100%;display:flex;flex-direction:column;gap:16px"></div>
   <button class="btn btn-success" id="btn-save-settings">Speichern</button>
   <h2 style="margin-top:12px">Preishistorie</h2>
   <div class="stats" id="price-history-list"></div>
@@ -186,7 +198,7 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
 <div id="settings-done-screen" class="screen">
   <div class="icon">✅</div>
   <h1>Gespeichert!</h1>
-  <p style="color:var(--muted)">Neue Preiswerte werden ab dem angegebenen Datum für Kostenberechnungen verwendet.</p>
+  <p style="color:var(--muted)">Neue Preiswerte werden ab dem angegebenen Datum verwendet.</p>
   <button class="btn btn-primary" id="btn-settings-done-back">OK</button>
 </div>
 
@@ -199,38 +211,97 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
 </div>
 
 <script>
-var CONFIG = {
-  pin:'9999',meter_id:'7ELS2541479709',meter_type:'Itron G4 RF1',initial_reading:0,
-  max_daily_consumption:25,plausibility_factor:3.0,owner:'SWSZ',
-  app_url:'https://orvillewilbur.github.io/gas-tracker/',
-  price_history:[{valid_from:'2023-07-05',gas_price_per_kwh:0.10058,brennwert:11.584,zustandszahl:0.8966}]
-};
+/* ===== CONSTANTS ===== */
+var APP_PIN = '9999';
+var METERS = [
+  {id:'garten-strom',name:'Strom',property:'Garten',propIcon:'\uD83C\uDFE1',type:'strom',icon:'\u26A1',unit:'kWh',meter_nr:'36315107'},
+  {id:'garten-wasser',name:'Wasser',property:'Garten',propIcon:'\uD83C\uDFE1',type:'wasser',icon:'\uD83D\uDCA7',unit:'m\u00B3',meter_nr:'8DME7681184933/001'},
+  {id:'gustav-strom',name:'Strom',property:'Gustav-Adolf-Str.',propIcon:'\uD83C\uDFE0',type:'strom',icon:'\u26A1',unit:'kWh',meter_nr:'1DZG0061092460'},
+  {id:'gustav-kaltwasser',name:'Kaltwasser',property:'Gustav-Adolf-Str.',propIcon:'\uD83C\uDFE0',type:'wasser',icon:'\uD83D\uDCA7',unit:'m\u00B3',meter_nr:'435034120'},
+  {id:'gustav-warmwasser',name:'Warmwasser',property:'Gustav-Adolf-Str.',propIcon:'\uD83C\uDFE0',type:'wasser',icon:'\uD83D\uDD34',unit:'m\u00B3',meter_nr:'110252214'},
+  {id:'fritz-gas',name:'Gas',property:'Fritz-Haber-Str.',propIcon:'\uD83C\uDFE0',type:'gas',icon:'\uD83D\uDD25',unit:'m\u00B3',meter_nr:'7ELS2541479709'},
+  {id:'fritz-strom1',name:'Strom HT',property:'Fritz-Haber-Str.',propIcon:'\uD83C\uDFE0',type:'strom',icon:'\u26A1',unit:'kWh',meter_nr:'3642851'},
+  {id:'fritz-strom2',name:'Strom NT',property:'Fritz-Haber-Str.',propIcon:'\uD83C\uDFE0',type:'strom',icon:'\u26A1',unit:'kWh',meter_nr:'3642841'}
+];
 
+/* ===== STATE ===== */
 var GITHUB_REPO = localStorage.getItem('gt_repo') || '';
 var GITHUB_TOKEN = localStorage.getItem('gt_token') || '';
-var READINGS_PATH = 'readings.json', CONFIG_PATH = 'config.json';
-var readings = [], pinInput = '', readingInput = '', currentSha = '', configSha = '', pendingValue = null;
+var selectedMeter = null;
+var meterConfig = {};
+var readings = [];
+var currentSha = '', configSha = '';
+var pinInput = '', readingInput = '', pendingValue = null;
+
+/* ===== PATHS ===== */
+function readingsPath() { return 'meters/' + selectedMeter.id + '/readings.json'; }
+function configPath() { return 'meters/' + selectedMeter.id + '/config.json'; }
+
+/* ===== TYPE-AWARE HELPERS ===== */
+function maxDecimals() {
+  if (!selectedMeter) return 3;
+  return selectedMeter.type === 'strom' ? 1 : 3;
+}
+
+function fmtVal(v) { return v.toFixed(maxDecimals()); }
+
+function getDefaultConfig() {
+  var d = { meter_id: selectedMeter.meter_nr, type: selectedMeter.type, initial_reading: 0, plausibility_factor: 3.0, price_history: [] };
+  if (selectedMeter.type === 'gas') d.max_daily_consumption = 25;
+  else if (selectedMeter.type === 'strom') d.max_daily_consumption = 100;
+  else d.max_daily_consumption = 5;
+  return d;
+}
 
 function getPriceForDate(dateStr) {
-  var ph = CONFIG.price_history || [];
+  var ph = meterConfig.price_history || [];
   var sorted = ph.slice().sort(function(a,b) { return b.valid_from.localeCompare(a.valid_from); });
   var d = dateStr.substring(0,10);
-  for (var i = 0; i < sorted.length; i++) {
-    if (sorted[i].valid_from <= d) return sorted[i];
-  }
-  return sorted[sorted.length-1] || {gas_price_per_kwh:0,brennwert:0,zustandszahl:0};
+  for (var i = 0; i < sorted.length; i++) { if (sorted[i].valid_from <= d) return sorted[i]; }
+  return sorted[sorted.length-1] || {};
 }
 
-function pricePerM3ForDate(dateStr) {
+function consToKwh(cons, dateStr) {
+  if (!selectedMeter) return 0;
+  if (selectedMeter.type === 'gas') { var p = getPriceForDate(dateStr); return cons * (p.brennwert || 0) * (p.zustandszahl || 0); }
+  if (selectedMeter.type === 'strom') return cons;
+  return null;
+}
+
+function consToCost(cons, dateStr) {
+  if (!selectedMeter) return 0;
   var p = getPriceForDate(dateStr);
-  return p.gas_price_per_kwh * p.brennwert * p.zustandszahl;
+  if (selectedMeter.type === 'gas') return cons * (p.gas_price_per_kwh || 0) * (p.brennwert || 0) * (p.zustandszahl || 0);
+  if (selectedMeter.type === 'strom') return cons * (p.price_per_kwh || 0);
+  if (selectedMeter.type === 'wasser') return cons * (p.price_per_m3 || 0);
+  return 0;
 }
 
-function m3ToKwh(m3, dateStr) {
-  var p = getPriceForDate(dateStr);
-  return m3 * p.brennwert * p.zustandszahl;
+function hasPrices() { return (meterConfig.price_history || []).length > 0; }
+
+/* ===== LOCALSTORAGE CACHE ===== */
+function getCachedReading(id) {
+  try { return JSON.parse(localStorage.getItem('gt_last_' + id) || 'null'); } catch(e) { return null; }
+}
+function setCachedReading(id, val, date, unit) {
+  try { localStorage.setItem('gt_last_' + id, JSON.stringify({value:val, date:date, unit:unit})); } catch(e) {}
 }
 
+/* ===== LOCKOUT ===== */
+function getLockout() {
+  try { var d = JSON.parse(localStorage.getItem('gt_lockout') || '{}'); return {fails:d.fails||0,until:d.until||0}; }
+  catch(e) { return {fails:0,until:0}; }
+}
+function setLockout(f,u) { localStorage.setItem('gt_lockout', JSON.stringify({fails:f,until:u})); }
+function resetLockout() { localStorage.removeItem('gt_lockout'); }
+function lockDur(f) { return 3600000 * Math.pow(2, Math.max(0, f-3)); }
+function fmtLock(ms) {
+  var m = Math.ceil(ms/60000);
+  if (m >= 60) { var h = Math.floor(m/60), r = m%60; return r > 0 ? h+'h '+r+'min' : h+'h'; }
+  return m + ' min';
+}
+
+/* ===== SETUP & HASH ===== */
 function checkSetup() {
   var h = window.location.hash;
   if (h.indexOf('setup=') !== -1) {
@@ -240,34 +311,32 @@ function checkSetup() {
     if (r) { localStorage.setItem('gt_repo', r); GITHUB_REPO = r; }
     p.delete('setup'); p.delete('repo');
     var rest = p.toString();
-    if (rest) { window.location.hash = rest; }
+    if (rest) window.location.hash = rest;
     else { window.location.hash = ''; history.replaceState(null, '', window.location.pathname); }
   }
 }
 
 function checkHashAction() {
   var h = window.location.hash;
-  if (h.indexOf('delete=') !== -1) {
-    var p = new URLSearchParams(h.substring(1));
-    var ts = p.get('delete');
-    window.location.hash = '';
-    history.replaceState(null, '', window.location.pathname);
-    return {action:'delete', ts:ts};
-  }
-  if (h.indexOf('settings') !== -1) {
-    window.location.hash = '';
-    history.replaceState(null, '', window.location.pathname);
-    return {action:'settings'};
-  }
-  return null;
+  if (!h || h.length < 2) return null;
+  var p = new URLSearchParams(h.substring(1));
+  var meterId = p.get('meter');
+  var result = null;
+  if (p.has('delete')) result = {action:'delete', ts:p.get('delete'), meter:meterId};
+  else if (p.has('settings')) result = {action:'settings', meter:meterId};
+  else if (meterId) result = {action:'select', meter:meterId};
+  if (result) { window.location.hash = ''; history.replaceState(null, '', window.location.pathname); }
+  return result;
 }
 
+/* ===== SCREEN MANAGEMENT ===== */
 function showScreen(id) {
   var screens = document.querySelectorAll('.screen');
   for (var i = 0; i < screens.length; i++) screens[i].classList.remove('active');
   document.getElementById(id).classList.add('active');
 }
 
+/* ===== NUMPAD ===== */
 function buildNumpad(id, onKey) {
   var el = document.getElementById(id);
   var keys = ['1','2','3','4','5','6','7','8','9', id==='input-pad'?',':'', '0', '\u232B'];
@@ -282,6 +351,7 @@ function buildNumpad(id, onKey) {
   });
 }
 
+/* ===== PIN FLOW ===== */
 function updatePinDots(err) {
   var dots = document.querySelectorAll('#pin-dots .pin-dot');
   for (var i = 0; i < dots.length; i++) {
@@ -290,37 +360,19 @@ function updatePinDots(err) {
   }
 }
 
-function getLockout() {
-  try { var d = JSON.parse(localStorage.getItem('gt_lockout') || '{}'); return {fails: d.fails||0, until: d.until||0}; }
-  catch(e) { return {fails:0, until:0}; }
-}
-function setLockout(fails, until) { localStorage.setItem('gt_lockout', JSON.stringify({fails:fails, until:until})); }
-function resetLockout() { localStorage.removeItem('gt_lockout'); }
-function lockoutDuration(fails) {
-  var extra = fails - 3;
-  return 3600000 * Math.pow(2, Math.max(0, extra));
-}
-function formatLockTime(ms) {
-  var m = Math.ceil(ms / 60000);
-  if (m >= 60) { var h = Math.floor(m/60), rm = m%60; return rm > 0 ? h+'h '+rm+'min' : h+'h'; }
-  return m + ' min';
-}
-
 function pinFlow(onSuccess) {
   pinInput = ''; updatePinDots(false); showScreen('pin-screen');
   var h2 = document.getElementById('pin-screen').querySelector('h2');
   var lockTimer = null;
   function checkLocked() {
-    var lo = getLockout();
-    var remaining = lo.until - Date.now();
-    if (lo.fails >= 3 && remaining > 0) {
-      h2.textContent = 'Gesperrt \u2014 ' + formatLockTime(remaining);
-      h2.style.color = 'var(--err)';
+    var lo = getLockout(), rem = lo.until - Date.now();
+    if (lo.fails >= 3 && rem > 0) {
+      h2.textContent = 'Gesperrt \u2014 ' + fmtLock(rem); h2.style.color = 'var(--err)';
       if (lockTimer) clearInterval(lockTimer);
       lockTimer = setInterval(function() {
         var r2 = lo.until - Date.now();
         if (r2 <= 0) { clearInterval(lockTimer); h2.textContent = 'PIN eingeben'; h2.style.color = ''; return; }
-        h2.textContent = 'Gesperrt \u2014 ' + formatLockTime(r2);
+        h2.textContent = 'Gesperrt \u2014 ' + fmtLock(r2);
       }, 10000);
       return true;
     }
@@ -334,19 +386,12 @@ function pinFlow(onSuccess) {
     if (pinInput.length >= 4) return;
     pinInput += key; updatePinDots(false);
     if (pinInput.length === 4) {
-      if (pinInput === CONFIG.pin) {
-        resetLockout();
-        if (lockTimer) clearInterval(lockTimer);
+      if (pinInput === APP_PIN) {
+        resetLockout(); if (lockTimer) clearInterval(lockTimer);
         setTimeout(onSuccess, 200);
       } else {
-        var lo = getLockout();
-        var newFails = lo.fails + 1;
-        if (newFails >= 3) {
-          var dur = lockoutDuration(newFails);
-          setLockout(newFails, Date.now() + dur);
-        } else {
-          setLockout(newFails, 0);
-        }
+        var lo = getLockout(), nf = lo.fails + 1;
+        if (nf >= 3) setLockout(nf, Date.now() + lockDur(nf)); else setLockout(nf, 0);
         updatePinDots(true);
         setTimeout(function() { pinInput = ''; updatePinDots(false); checkLocked(); }, 600);
       }
@@ -354,50 +399,50 @@ function pinFlow(onSuccess) {
   });
 }
 
-function updateReadingDisplay() {
-  var el = document.getElementById('reading-value');
-  el.innerHTML = readingInput === '' ? '<span class="cursor">|</span>' : readingInput + '<span class="cursor">|</span>';
-  document.getElementById('btn-submit').disabled = readingInput === '' || readingInput === ',';
-  var last = readings.length > 0 ? readings[readings.length-1] : null;
-  var info = document.getElementById('last-reading-info');
-  if (last) {
-    var d = new Date(last.timestamp);
-    info.textContent = 'Letzter Stand: ' + last.value.toFixed(3) + ' m\u00B3 (' + d.toLocaleDateString('de-DE') + ')';
-  } else {
-    info.textContent = 'Startwert: ' + CONFIG.initial_reading.toFixed(3) + ' m\u00B3';
-  }
+/* ===== METER SELECTION ===== */
+function buildMeterSelection() {
+  var list = document.getElementById('meter-list');
+  var groups = {}, order = [];
+  METERS.forEach(function(m) {
+    if (!groups[m.property]) { groups[m.property] = {icon:m.propIcon, meters:[]}; order.push(m.property); }
+    groups[m.property].meters.push(m);
+  });
+  var html = '';
+  order.forEach(function(prop) {
+    var g = groups[prop];
+    html += '<div class="property-group"><div class="property-header">' + g.icon + ' ' + prop + '</div>';
+    g.meters.forEach(function(m) {
+      var c = getCachedReading(m.id);
+      html += '<div class="meter-card" data-type="' + m.type + '" onclick="selectMeter(\'' + m.id + '\')">';
+      html += '<div class="mc-icon">' + m.icon + '</div>';
+      html += '<div class="mc-info"><div class="mc-name">' + m.name + '</div><div class="mc-nr">' + m.meter_nr + '</div></div>';
+      if (c) html += '<div class="mc-last"><div class="mc-last-val">' + c.value + ' ' + c.unit + '</div><div class="mc-last-date">' + c.date + '</div></div>';
+      html += '</div>';
+    });
+    html += '</div>';
+  });
+  list.innerHTML = html;
 }
 
-function handleInputKey(key) {
-  if (key === 'del') { readingInput = readingInput.slice(0,-1); updateReadingDisplay(); return; }
-  if (key === ',') { if (readingInput.indexOf(',') !== -1 || readingInput === '') return; readingInput += ','; }
-  else {
-    var p = readingInput.split(',');
-    if (p.length > 1 && p[1].length >= 3) return;
-    if (readingInput.replace(',','').length >= 8) return;
-    readingInput += key;
-  }
-  updateReadingDisplay();
+function selectMeter(id) {
+  selectMeterById(id, function() { setupInputScreen(); showScreen('input-screen'); });
 }
 
-function checkPlausibility(val) {
-  var last = readings.length > 0 ? readings[readings.length-1] : null;
-  var lv = last ? last.value : CONFIG.initial_reading;
-  var lt = last ? new Date(last.timestamp) : new Date();
-  if (val <= lv) return {ok:false, error:true, msg:'Neuer Stand (' + val.toFixed(3) + ') muss gr\u00F6\u00DFer sein als letzter Stand (' + lv.toFixed(3) + ').'};
-  var hrs = Math.max(0.1, (Date.now() - lt.getTime()) / 3600000);
-  var days = hrs / 24, cons = val - lv, da = cons / days;
-  var ha = null;
-  var avgs = readings.filter(function(r) { return r.daily_avg != null && !r.suspicious; }).map(function(r) { return r.daily_avg; });
-  if (avgs.length > 0) ha = avgs.reduce(function(a,b) { return a+b; }, 0) / avgs.length;
-  var w = [];
-  if (da > CONFIG.max_daily_consumption) w.push('Tagesverbrauch ' + da.toFixed(2) + ' m\u00B3 \u00FCberschreitet Maximum (' + CONFIG.max_daily_consumption + ' m\u00B3).');
-  if (ha && da > ha * CONFIG.plausibility_factor) w.push('Tagesverbrauch ' + da.toFixed(2) + ' m\u00B3 ist ' + (da/ha).toFixed(1) + 'x h\u00F6her als \u00D8 (' + ha.toFixed(2) + ' m\u00B3).');
-  if (ha && da < ha / CONFIG.plausibility_factor && da > 0) w.push('Tagesverbrauch ' + da.toFixed(3) + ' m\u00B3 ist ungew\u00F6hnlich niedrig (\u00D8 ' + ha.toFixed(2) + ' m\u00B3).');
-  if (w.length > 0) return {ok:false, error:false, msg:w.join('\n')};
-  return {ok:true};
+function selectMeterById(id, callback) {
+  selectedMeter = null;
+  for (var i = 0; i < METERS.length; i++) { if (METERS[i].id === id) { selectedMeter = METERS[i]; break; } }
+  if (!selectedMeter) { showError('Zähler "' + id + '" nicht gefunden.'); return; }
+  showScreen('loading-screen');
+  document.getElementById('loading-text').textContent = 'Lade ' + selectedMeter.name + '...';
+  loadData().then(callback).catch(function(e) { showError(e.message); });
 }
 
+function goToMeterSelect() {
+  selectedMeter = null; meterConfig = {}; readings = []; currentSha = ''; configSha = ''; readingInput = '';
+  buildMeterSelection(); showScreen('meter-screen');
+}
+
+/* ===== GITHUB API ===== */
 function fetchFile(path) {
   return fetch('https://api.github.com/repos/' + GITHUB_REPO + '/contents/' + path, {
     headers: {'Authorization': 'Bearer ' + GITHUB_TOKEN, 'Accept': 'application/vnd.github.v3+json'}
@@ -412,7 +457,7 @@ function commitFile(path, content, sha, msg) {
   var body = {
     message: msg,
     content: btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2)))),
-    committer: {name: 'Gas Tracker', email: 'gas-tracker@bot.local'}
+    committer: {name: 'Utility Tracker', email: 'utility-tracker@bot.local'}
   };
   if (sha) body.sha = sha;
   return fetch('https://api.github.com/repos/' + GITHUB_REPO + '/contents/' + path, {
@@ -425,22 +470,91 @@ function commitFile(path, content, sha, msg) {
   });
 }
 
+/* ===== DATA LOADING ===== */
 function loadData() {
-  return fetchFile(CONFIG_PATH).then(function(cfg) {
-    if (cfg.content) { Object.assign(CONFIG, cfg.content); configSha = cfg.sha; }
-    return fetchFile(READINGS_PATH);
+  return fetchFile(configPath()).then(function(cfg) {
+    if (cfg.content) { meterConfig = cfg.content; configSha = cfg.sha; }
+    else { meterConfig = getDefaultConfig(); configSha = null; }
+    return fetchFile(readingsPath());
   }).then(function(rd) {
     if (rd.content) { readings = rd.content.readings || []; currentSha = rd.sha; }
-  }).catch(function(e) { console.error('Laden:', e); });
+    else { readings = []; currentSha = null; }
+    // Update cache with latest reading
+    if (readings.length > 0) {
+      var last = readings[readings.length-1];
+      var d = new Date(last.timestamp);
+      setCachedReading(selectedMeter.id, fmtVal(last.value), d.toLocaleDateString('de-DE'), selectedMeter.unit);
+    }
+  }).catch(function(e) { console.error('Laden:', e); throw e; });
 }
 
+/* ===== INPUT SCREEN ===== */
+function setupInputScreen() {
+  document.getElementById('input-mh-icon').textContent = selectedMeter.icon;
+  document.getElementById('input-mh-name').textContent = selectedMeter.property + ' \u2014 ' + selectedMeter.name;
+  document.getElementById('reading-unit-display').textContent = selectedMeter.unit;
+  buildNumpad('input-pad', handleInputKey);
+  readingInput = '';
+  updateReadingDisplay();
+}
+
+function updateReadingDisplay() {
+  var el = document.getElementById('reading-value');
+  el.innerHTML = readingInput === '' ? '<span class="cursor">|</span>' : readingInput + '<span class="cursor">|</span>';
+  document.getElementById('btn-submit').disabled = readingInput === '' || readingInput === ',';
+  var last = readings.length > 0 ? readings[readings.length-1] : null;
+  var info = document.getElementById('last-reading-info');
+  if (last) {
+    var d = new Date(last.timestamp);
+    info.textContent = 'Letzter Stand: ' + fmtVal(last.value) + ' ' + selectedMeter.unit + ' (' + d.toLocaleDateString('de-DE') + ')';
+  } else {
+    info.textContent = 'Erster Eintrag f\u00FCr diesen Z\u00E4hler';
+  }
+}
+
+function handleInputKey(key) {
+  if (key === 'del') { readingInput = readingInput.slice(0,-1); updateReadingDisplay(); return; }
+  if (key === ',') {
+    if (readingInput.indexOf(',') !== -1 || readingInput === '') return;
+    readingInput += ',';
+  } else {
+    var p = readingInput.split(',');
+    if (p.length > 1 && p[1].length >= maxDecimals()) return;
+    if (readingInput.replace(',','').length >= 8) return;
+    readingInput += key;
+  }
+  updateReadingDisplay();
+}
+
+/* ===== PLAUSIBILITY ===== */
+function checkPlausibility(val) {
+  var last = readings.length > 0 ? readings[readings.length-1] : null;
+  var lv = last ? last.value : (meterConfig.initial_reading || 0);
+  var lt = last ? new Date(last.timestamp) : new Date();
+  if (val <= lv) return {ok:false, error:true, msg:'Neuer Stand (' + fmtVal(val) + ') muss gr\u00F6\u00DFer sein als letzter Stand (' + fmtVal(lv) + ').'};
+  var hrs = Math.max(0.1, (Date.now() - lt.getTime()) / 3600000);
+  var days = hrs / 24, cons = val - lv, da = cons / days;
+  var ha = null;
+  var avgs = readings.filter(function(r) { return r.daily_avg != null && !r.suspicious; }).map(function(r) { return r.daily_avg; });
+  if (avgs.length > 0) ha = avgs.reduce(function(a,b) { return a+b; }, 0) / avgs.length;
+  var mdc = meterConfig.max_daily_consumption || 999;
+  var pf = meterConfig.plausibility_factor || 3.0;
+  var w = [];
+  if (da > mdc) w.push('Tagesverbrauch ' + da.toFixed(2) + ' ' + selectedMeter.unit + ' \u00FCberschreitet Maximum (' + mdc + ').');
+  if (ha && da > ha * pf) w.push('Tagesverbrauch ' + da.toFixed(2) + ' ist ' + (da/ha).toFixed(1) + 'x h\u00F6her als \u00D8 (' + ha.toFixed(2) + ').');
+  if (ha && da < ha / pf && da > 0) w.push('Tagesverbrauch ' + da.toFixed(3) + ' ist ungew\u00F6hnlich niedrig (\u00D8 ' + ha.toFixed(2) + ').');
+  if (w.length > 0) return {ok:false, error:false, msg:w.join('\n')};
+  return {ok:true};
+}
+
+/* ===== SAVE READING ===== */
 function saveReading(value, suspicious) {
   showScreen('loading-screen');
   document.getElementById('loading-text').textContent = 'Wird gespeichert...';
-  fetchFile(READINGS_PATH).then(function(rd) {
+  fetchFile(readingsPath()).then(function(rd) {
     if (rd.content) { readings = rd.content.readings || []; currentSha = rd.sha; }
     var last = readings.length > 0 ? readings[readings.length-1] : null;
-    var lv = last ? last.value : CONFIG.initial_reading;
+    var lv = last ? last.value : (meterConfig.initial_reading || 0);
     var lt = last ? new Date(last.timestamp).getTime() : Date.now();
     var cons = value - lv;
     var hrs = Math.max(0.1, (Date.now() - lt) / 3600000);
@@ -454,172 +568,174 @@ function saveReading(value, suspicious) {
     };
     readings.push(nr);
     var dateStr = new Date().toLocaleDateString('de-DE');
-    var msg = 'Ablesung ' + dateStr + ': ' + value.toFixed(3) + ' m\u00B3' + (suspicious ? ' \u26A0\uFE0F' : '');
-    return commitFile(READINGS_PATH, {meter_id: CONFIG.meter_id, readings: readings}, currentSha, msg).then(function() {
+    var dec = maxDecimals();
+    var msg = selectedMeter.property + ' ' + selectedMeter.name + ': ' + dateStr + ' \u2014 ' + value.toFixed(dec) + ' ' + selectedMeter.unit;
+    if (suspicious) msg += ' \u26A0\uFE0F';
+    return commitFile(readingsPath(), {meter_id: meterConfig.meter_id || selectedMeter.meter_nr, readings: readings}, currentSha, msg).then(function() {
+      setCachedReading(selectedMeter.id, value.toFixed(dec), dateStr, selectedMeter.unit);
       showStats(nr);
     });
-  }).catch(function(e) {
-    document.getElementById('error-msg').textContent = e.message;
-    showScreen('error-screen');
-  });
+  }).catch(function(e) { showError(e.message); });
 }
 
+/* ===== DELETE READING ===== */
 function deleteReading(ts) {
   showScreen('loading-screen');
   document.getElementById('loading-text').textContent = 'Wird gel\u00F6scht...';
-  fetchFile(READINGS_PATH).then(function(rd) {
+  fetchFile(readingsPath()).then(function(rd) {
     if (rd.content) { readings = rd.content.readings || []; currentSha = rd.sha; }
     var idx = -1;
     for (var i = 0; i < readings.length; i++) { if (readings[i].timestamp === ts) { idx = i; break; } }
     if (idx === -1) throw new Error('Nicht gefunden.');
     var rm = readings.splice(idx, 1)[0];
     var dateStr = new Date(rm.timestamp).toLocaleDateString('de-DE');
-    var msg = 'Gel\u00F6scht: ' + rm.value.toFixed(3) + ' m\u00B3 vom ' + dateStr;
-    return commitFile(READINGS_PATH, {meter_id: CONFIG.meter_id, readings: readings}, currentSha, msg);
+    var msg = selectedMeter.property + ' ' + selectedMeter.name + ': Gel\u00F6scht ' + fmtVal(rm.value) + ' ' + selectedMeter.unit + ' vom ' + dateStr;
+    return commitFile(readingsPath(), {meter_id: meterConfig.meter_id || selectedMeter.meter_nr, readings: readings}, currentSha, msg);
   }).then(function() {
+    // Update cache
+    if (readings.length > 0) {
+      var last = readings[readings.length-1];
+      var d = new Date(last.timestamp);
+      setCachedReading(selectedMeter.id, fmtVal(last.value), d.toLocaleDateString('de-DE'), selectedMeter.unit);
+    }
     showScreen('delete-done-screen');
-  }).catch(function(e) {
-    document.getElementById('error-msg').textContent = e.message;
-    showScreen('error-screen');
-  });
+  }).catch(function(e) { showError(e.message); });
 }
 
-function saveSettings(newEntry) {
-  showScreen('loading-screen');
-  document.getElementById('loading-text').textContent = 'Einstellungen werden gespeichert...';
-  fetchFile(CONFIG_PATH).then(function(cfg) {
-    if (cfg.content) { Object.assign(CONFIG, cfg.content); configSha = cfg.sha; }
-    if (!CONFIG.price_history) CONFIG.price_history = [];
-    CONFIG.price_history.push(newEntry);
-    CONFIG.price_history.sort(function(a,b) { return a.valid_from.localeCompare(b.valid_from); });
-    return commitFile(CONFIG_PATH, CONFIG, configSha, 'Preis\u00E4nderung ab ' + newEntry.valid_from);
-  }).then(function() {
-    showScreen('settings-done-screen');
-  }).catch(function(e) {
-    document.getElementById('error-msg').textContent = e.message;
-    showScreen('error-screen');
-  });
-}
-
+/* ===== STATS ===== */
 function showStats(nr) {
   showScreen('stats-screen');
   var c = document.getElementById('stats-container');
-  var p = getPriceForDate(nr.timestamp);
-  var kwh = nr.consumption * p.brennwert * p.zustandszahl;
-  var pm3 = p.gas_price_per_kwh * p.brennwert * p.zustandszahl;
-  var costs = nr.consumption * pm3;
-  var costsDay = nr.days_since_last > 0 ? costs / nr.days_since_last : 0;
-  var kwhDay = nr.days_since_last > 0 ? kwh / nr.days_since_last : 0;
-  var m3Day = nr.days_since_last > 0 ? nr.consumption / nr.days_since_last : 0;
-  var last = readings.length >= 2 ? readings[readings.length-2] : null;
-  var lastDate = last ? new Date(last.timestamp).toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' + new Date(last.timestamp).toLocaleTimeString('de-DE', {hour:'2-digit',minute:'2-digit'}) : '\u2014';
-  var lastValue = last ? last.value.toFixed(3) + ' m\u00B3' : '\u2014';
-  var nowDate = new Date(nr.timestamp);
-  var nowStr = nowDate.toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' + nowDate.toLocaleTimeString('de-DE', {hour:'2-digit',minute:'2-digit'});
-  var sus = nr.suspicious ? '<div style="background:rgba(245,158,11,.15);color:var(--warn);padding:10px;border-radius:10px;font-size:13px;margin-bottom:8px">\u26A0\uFE0F Wert als verd\u00E4chtig markiert</div>' : '';
+  var unit = selectedMeter.unit, dec = maxDecimals();
+  var kwh = consToKwh(nr.consumption, nr.timestamp);
+  var cost = consToCost(nr.consumption, nr.timestamp);
+  var costDay = nr.days_since_last > 0 ? cost / nr.days_since_last : 0;
+  var consDay = nr.days_since_last > 0 ? nr.consumption / nr.days_since_last : 0;
+  var hp = hasPrices();
 
+  var last = readings.length >= 2 ? readings[readings.length-2] : null;
+  var lastDate = last ? new Date(last.timestamp).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' + new Date(last.timestamp).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}) : '\u2014';
+  var lastValue = last ? last.value.toFixed(dec) + ' ' + unit : '\u2014';
+  var nowDate = new Date(nr.timestamp);
+  var nowStr = nowDate.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}) + ' ' + nowDate.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+
+  var sus = nr.suspicious ? '<div style="background:rgba(245,158,11,.15);color:var(--warn);padding:10px;border-radius:10px;font-size:13px;margin-bottom:8px">\u26A0\uFE0F Wert als verd\u00E4chtig markiert</div>' : '';
   var html = sus;
+
+  // New reading
   html += '<div class="stat-card" style="flex-direction:column;align-items:stretch">';
   html += '<div style="font-size:13px;color:var(--muted)">Neuer Z\u00E4hlerstand</div>';
-  html += '<div class="stat-value" style="font-size:28px;margin-top:6px">' + nr.value.toFixed(3) + ' <span class="reading-unit">m\u00B3</span></div>';
-  html += '<div style="font-size:12px;color:var(--muted);margin-top:4px">' + nowStr + '</div>';
-  html += '</div>';
+  html += '<div class="stat-value" style="font-size:28px;margin-top:6px">' + nr.value.toFixed(dec) + ' <span class="reading-unit">' + unit + '</span></div>';
+  html += '<div style="font-size:12px;color:var(--muted);margin-top:4px">' + nowStr + '</div></div>';
 
+  // Last reading
   html += '<div class="stat-card" style="flex-direction:column;align-items:stretch">';
   html += '<div style="font-size:13px;color:var(--muted)">Letzte Ablesung</div>';
   html += '<div style="font-size:18px;font-weight:800;margin-top:6px">' + lastValue + '</div>';
-  html += '<div style="font-size:12px;color:var(--muted);margin-top:4px">' + lastDate + '</div>';
-  html += '</div>';
+  html += '<div style="font-size:12px;color:var(--muted);margin-top:4px">' + lastDate + '</div></div>';
 
-  html += '<div class="stat-card">';
-  html += '<div class="stat-label">Zeitraum</div>';
-  html += '<div class="stat-value">' + nr.days_since_last.toFixed(0) + ' <span style="font-size:14px;color:var(--muted)">Tage</span></div>';
-  html += '</div>';
+  // Period
+  html += '<div class="stat-card"><div class="stat-label">Zeitraum</div>';
+  html += '<div class="stat-value">' + nr.days_since_last.toFixed(0) + ' <span style="font-size:14px;color:var(--muted)">Tage</span></div></div>';
 
+  // Consumption total
   html += '<div class="stat-card" style="flex-direction:column;align-items:stretch;gap:6px">';
-  html += '<div style="font-size:13px;color:var(--muted)">Verbrauch seit letzter Ablesung in Summe</div>';
-  html += '<div style="display:flex;justify-content:space-between;align-items:baseline">';
-  html += '<div><span style="font-size:20px;font-weight:800">' + nr.consumption.toFixed(3) + '</span> <span style="color:var(--muted)">m\u00B3</span></div>';
-  html += '<div><span style="font-size:20px;font-weight:800">' + kwh.toFixed(1) + '</span> <span style="color:var(--muted)">kWh</span></div>';
-  html += '<div><span style="font-size:20px;font-weight:800">' + costs.toFixed(2) + '</span> <span style="color:var(--muted)">\u20AC</span></div>';
+  html += '<div style="font-size:13px;color:var(--muted)">Verbrauch gesamt</div>';
+  html += '<div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px">';
+  html += '<div><span style="font-size:20px;font-weight:800">' + nr.consumption.toFixed(dec) + '</span> <span style="color:var(--muted)">' + unit + '</span></div>';
+  if (selectedMeter.type === 'gas' && kwh) html += '<div><span style="font-size:20px;font-weight:800">' + kwh.toFixed(1) + '</span> <span style="color:var(--muted)">kWh</span></div>';
+  if (selectedMeter.type === 'wasser') html += '<div><span style="font-size:20px;font-weight:800">' + (nr.consumption*1000).toFixed(0) + '</span> <span style="color:var(--muted)">Liter</span></div>';
+  if (hp && cost > 0) html += '<div><span style="font-size:20px;font-weight:800">' + cost.toFixed(2) + '</span> <span style="color:var(--muted)">\u20AC</span></div>';
   html += '</div></div>';
 
+  // Consumption per day
   html += '<div class="stat-card" style="flex-direction:column;align-items:stretch;gap:6px">';
-  html += '<div style="font-size:13px;color:var(--muted)">Verbrauch seit letzter Ablesung \u00D8 pro Tag</div>';
-  html += '<div style="display:flex;justify-content:space-between;align-items:baseline">';
-  html += '<div><span style="font-size:20px;font-weight:800">' + m3Day.toFixed(2) + '</span> <span style="color:var(--muted)">m\u00B3</span></div>';
-  html += '<div><span style="font-size:20px;font-weight:800">' + kwhDay.toFixed(1) + '</span> <span style="color:var(--muted)">kWh</span></div>';
-  html += '<div><span style="font-size:20px;font-weight:800">' + costsDay.toFixed(2) + '</span> <span style="color:var(--muted)">\u20AC</span></div>';
+  html += '<div style="font-size:13px;color:var(--muted)">\u00D8 pro Tag</div>';
+  html += '<div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px">';
+  html += '<div><span style="font-size:20px;font-weight:800">' + consDay.toFixed(dec < 1 ? 1 : dec) + '</span> <span style="color:var(--muted)">' + unit + '</span></div>';
+  if (selectedMeter.type === 'gas' && kwh) {
+    var kwhDay = nr.days_since_last > 0 ? kwh / nr.days_since_last : 0;
+    html += '<div><span style="font-size:20px;font-weight:800">' + kwhDay.toFixed(1) + '</span> <span style="color:var(--muted)">kWh</span></div>';
+  }
+  if (selectedMeter.type === 'wasser') html += '<div><span style="font-size:20px;font-weight:800">' + (consDay*1000).toFixed(0) + '</span> <span style="color:var(--muted)">L</span></div>';
+  if (hp && costDay > 0) html += '<div><span style="font-size:20px;font-weight:800">' + costDay.toFixed(2) + '</span> <span style="color:var(--muted)">\u20AC</span></div>';
   html += '</div></div>';
 
   c.innerHTML = html;
   buildChart();
 }
 
+/* ===== CHART ===== */
 function buildChart() {
   var cc = document.getElementById('chart-container');
   var svgEl = document.getElementById('chart-svg');
+  var titleEl = document.getElementById('chart-title');
   var dp = readings.filter(function(r) { return r.daily_avg != null; });
   if (dp.length < 2) { cc.style.display = 'none'; return; }
   cc.style.display = 'block';
+
+  var isKwh = selectedMeter.type === 'gas' || selectedMeter.type === 'strom';
+  titleEl.textContent = isKwh ? 'Tagesverbrauch kWh/d' : 'Tagesverbrauch m\u00B3/d';
+
   var W = 380, H = 180, padT = 20, padR = 15, padB = 36, padL = 42;
   var cw = W - padL - padR, ch = H - padT - padB;
   var pts = dp.map(function(r) {
-    var p = getPriceForDate(r.timestamp);
-    return {date: new Date(r.timestamp), val: r.daily_avg * p.brennwert * p.zustandszahl};
+    var val;
+    if (selectedMeter.type === 'gas') {
+      var p = getPriceForDate(r.timestamp);
+      val = r.daily_avg * (p.brennwert || 1) * (p.zustandszahl || 1);
+    } else { val = r.daily_avg; }
+    return {date: new Date(r.timestamp), val: val};
   });
   var minT = pts[0].date.getTime(), maxT = pts[pts.length-1].date.getTime();
   var maxV = Math.max.apply(null, pts.map(function(p) { return p.val; })) * 1.15;
+  if (maxV === 0) maxV = 1;
   function x(d) { return padL + (maxT === minT ? cw/2 : ((d.getTime()-minT)/(maxT-minT))*cw); }
   function y(v) { return padT + ch - (v/maxV)*ch; }
 
-  var line = pts.map(function(p, i) {
-    return (i === 0 ? 'M' : 'L') + x(p.date).toFixed(1) + ',' + y(p.val).toFixed(1);
-  }).join(' ');
+  var line = pts.map(function(p, i) { return (i===0?'M':'L') + x(p.date).toFixed(1) + ',' + y(p.val).toFixed(1); }).join(' ');
   var area = line + ' L' + x(pts[pts.length-1].date).toFixed(1) + ',' + (padT+ch).toFixed(1) + ' L' + x(pts[0].date).toFixed(1) + ',' + (padT+ch).toFixed(1) + ' Z';
 
-  var ySteps = 4;
-  var yLabels = '';
+  var ySteps = 4, yLabels = '';
   for (var i = 0; i <= ySteps; i++) {
-    var v = (maxV / ySteps) * i;
-    var yy = y(v);
-    yLabels += '<text x="' + (padL-6) + '" y="' + (yy+4) + '" text-anchor="end" fill="#94a3b8" font-size="10">' + v.toFixed(0) + '</text>';
-    if (i > 0) yLabels += '<line x1="' + padL + '" y1="' + yy + '" x2="' + (W-padR) + '" y2="' + yy + '" stroke="#334155" stroke-width="0.5"/>';
+    var v = (maxV/ySteps)*i, yy = y(v);
+    yLabels += '<text x="'+(padL-6)+'" y="'+(yy+4)+'" text-anchor="end" fill="#94a3b8" font-size="10">'+v.toFixed(0)+'</text>';
+    if (i>0) yLabels += '<line x1="'+padL+'" y1="'+yy+'" x2="'+(W-padR)+'" y2="'+yy+'" stroke="#334155" stroke-width="0.5"/>';
   }
 
-  var xLabels = '';
-  var labelCount = Math.min(pts.length, 6);
-  var step = Math.max(1, Math.floor((pts.length-1)/(labelCount-1)));
-  var labeled = {};
-  for (var j = 0; j < pts.length; j += step) labeled[j] = true;
-  labeled[pts.length-1] = true;
+  var xLabels = '', labelCount = Math.min(pts.length, 6), step = Math.max(1, Math.floor((pts.length-1)/(labelCount-1)));
+  var labeled = {}; for (var j = 0; j < pts.length; j += step) labeled[j] = true; labeled[pts.length-1] = true;
   for (var idx in labeled) {
     var pt = pts[idx], dt = pt.date;
-    var label = dt.getDate() + '.' + (dt.getMonth()+1) + '.' + String(dt.getFullYear()).slice(2);
-    xLabels += '<text x="' + x(dt).toFixed(1) + '" y="' + (H-4) + '" text-anchor="middle" fill="#94a3b8" font-size="9">' + label + '</text>';
+    var label = dt.getDate()+'.'+(dt.getMonth()+1)+'.'+String(dt.getFullYear()).slice(2);
+    xLabels += '<text x="'+x(dt).toFixed(1)+'" y="'+(H-4)+'" text-anchor="middle" fill="#94a3b8" font-size="9">'+label+'</text>';
   }
 
+  var typeColor = selectedMeter.type === 'gas' ? '#f59e0b' : selectedMeter.type === 'strom' ? '#3b82f6' : '#06b6d4';
   var dots = '';
   pts.forEach(function(p) {
     var cx = x(p.date), cy = y(p.val);
-    dots += '<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="3.5" fill="#3b82f6" stroke="#0f172a" stroke-width="1.5"/>';
-    dots += '<text x="' + cx.toFixed(1) + '" y="' + (cy-8).toFixed(1) + '" text-anchor="middle" fill="#f1f5f9" font-size="9" font-weight="600">' + p.val.toFixed(1) + '</text>';
+    dots += '<circle cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="3.5" fill="'+typeColor+'" stroke="#0f172a" stroke-width="1.5"/>';
+    dots += '<text x="'+cx.toFixed(1)+'" y="'+(cy-8).toFixed(1)+'" text-anchor="middle" fill="#f1f5f9" font-size="9" font-weight="600">'+p.val.toFixed(1)+'</text>';
   });
 
-  svgEl.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" xmlns="http://www.w3.org/2000/svg">' +
-    '<defs><linearGradient id="areaG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3b82f6" stop-opacity="0.3"/><stop offset="100%" stop-color="#3b82f6" stop-opacity="0.02"/></linearGradient></defs>' +
+  svgEl.innerHTML = '<svg viewBox="0 0 '+W+' '+H+'" width="100%" xmlns="http://www.w3.org/2000/svg">' +
+    '<defs><linearGradient id="areaG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+typeColor+'" stop-opacity="0.3"/><stop offset="100%" stop-color="'+typeColor+'" stop-opacity="0.02"/></linearGradient></defs>' +
     yLabels +
-    '<line x1="' + padL + '" y1="' + (padT+ch) + '" x2="' + (W-padR) + '" y2="' + (padT+ch) + '" stroke="#334155" stroke-width="1"/>' +
-    '<path d="' + area + '" fill="url(#areaG)"/>' +
-    '<path d="' + line + '" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
-    dots + xLabels +
-    '</svg>';
+    '<line x1="'+padL+'" y1="'+(padT+ch)+'" x2="'+(W-padR)+'" y2="'+(padT+ch)+'" stroke="#334155" stroke-width="1"/>' +
+    '<path d="'+area+'" fill="url(#areaG)"/>' +
+    '<path d="'+line+'" fill="none" stroke="'+typeColor+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+    dots + xLabels + '</svg>';
 }
 
+/* ===== HISTORY ===== */
 function showHistory() {
   showScreen('history-screen');
+  document.getElementById('hist-mh-icon').textContent = selectedMeter.icon;
+  document.getElementById('hist-mh-name').textContent = selectedMeter.property + ' \u2014 ' + selectedMeter.name;
   var list = document.getElementById('history-list');
   var items = readings.slice().reverse().slice(0, 20);
+  var dec = maxDecimals(), unit = selectedMeter.unit;
   var html = '';
   items.forEach(function(r) {
     var d = new Date(r.timestamp);
@@ -627,46 +743,144 @@ function showHistory() {
     var tm = d.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
     var f = r.suspicious ? ' \u26A0\uFE0F' : '';
     if (r.consumption == null) {
-      html += '<div class="stat-card"><div><div class="stat-label">' + dt + ' ' + tm + f + '</div><div style="font-size:13px;color:var(--muted);margin-top:2px">Startwert</div></div><div class="stat-value" style="font-size:18px">' + r.value.toFixed(3) + '</div></div>';
+      html += '<div class="stat-card"><div><div class="stat-label">'+dt+' '+tm+f+'</div><div style="font-size:13px;color:var(--muted);margin-top:2px">Startwert</div></div><div class="stat-value" style="font-size:18px">'+r.value.toFixed(dec)+'</div></div>';
     } else {
-      var kwh = m3ToKwh(r.consumption, r.timestamp);
-      html += '<div class="stat-card"><div><div class="stat-label">' + dt + ' ' + tm + f + '</div><div style="font-size:13px;color:var(--muted);margin-top:2px">+' + kwh.toFixed(1) + ' kWh \u00B7 +' + r.consumption.toFixed(3) + ' m\u00B3</div></div><div class="stat-value" style="font-size:18px">' + r.value.toFixed(3) + '</div></div>';
+      var extra = '+' + r.consumption.toFixed(dec) + ' ' + unit;
+      if (selectedMeter.type === 'gas') {
+        var kwh = consToKwh(r.consumption, r.timestamp);
+        if (kwh) extra = '+' + kwh.toFixed(1) + ' kWh \u00B7 ' + extra;
+      }
+      html += '<div class="stat-card"><div><div class="stat-label">'+dt+' '+tm+f+'</div><div style="font-size:13px;color:var(--muted);margin-top:2px">'+extra+'</div></div><div class="stat-value" style="font-size:18px">'+r.value.toFixed(dec)+'</div></div>';
     }
   });
   list.innerHTML = html || '<div class="status-msg" style="color:var(--muted)">Noch keine Ablesungen.</div>';
 }
 
+/* ===== SETTINGS ===== */
 function showSettingsScreen() {
   showScreen('settings-screen');
+  document.getElementById('settings-title').textContent = selectedMeter.name + ' \u2014 Einstellungen';
+  var form = document.getElementById('settings-form');
+  var html = '';
+
+  // Date
+  html += '<div class="form-group"><label class="form-label">G\u00FCltig ab</label>';
+  html += '<input type="date" class="form-input" id="set-date"><div class="form-hint">Ab wann gelten die neuen Werte?</div></div>';
+
+  if (selectedMeter.type === 'gas') {
+    html += '<div class="form-group"><label class="form-label">Arbeitspreis brutto (\u20AC/kWh)</label>';
+    html += '<input type="number" step="0.0001" class="form-input" id="set-gas-price" placeholder="z.B. 0.10436" inputmode="decimal">';
+    html += '<div class="form-hint">Arbeitspreis inkl. MwSt aus der Gasrechnung</div></div>';
+    html += '<div class="form-group"><label class="form-label">Brennwert (kWh/m\u00B3)</label>';
+    html += '<input type="number" step="0.001" class="form-input" id="set-brennwert" placeholder="z.B. 11.496" inputmode="decimal">';
+    html += '<div class="form-hint">Steht auf der Gasrechnung</div></div>';
+    html += '<div class="form-group"><label class="form-label">Zustandszahl</label>';
+    html += '<input type="number" step="0.0001" class="form-input" id="set-zustand" placeholder="z.B. 0.8966" inputmode="decimal">';
+    html += '<div class="form-hint">Steht auf der Gasrechnung</div></div>';
+  } else if (selectedMeter.type === 'strom') {
+    html += '<div class="form-group"><label class="form-label">Arbeitspreis brutto (\u20AC/kWh)</label>';
+    html += '<input type="number" step="0.0001" class="form-input" id="set-strom-price" placeholder="z.B. 0.3456" inputmode="decimal">';
+    html += '<div class="form-hint">Arbeitspreis inkl. MwSt aus der Stromrechnung</div></div>';
+  } else {
+    html += '<div class="form-group"><label class="form-label">Preis (\u20AC/m\u00B3)</label>';
+    html += '<input type="number" step="0.01" class="form-input" id="set-wasser-price" placeholder="z.B. 3.50" inputmode="decimal">';
+    html += '<div class="form-hint">Wasserpreis inkl. Abwasser pro m\u00B3</div></div>';
+  }
+
+  html += '<div class="form-group"><label class="form-label">Notiz (optional)</label>';
+  html += '<input type="text" class="form-input" id="set-note" placeholder="z.B. Jahresabrechnung 2026"></div>';
+  form.innerHTML = html;
+
+  // Pre-fill
   var cur = getPriceForDate(new Date().toISOString());
   document.getElementById('set-date').value = new Date().toISOString().substring(0,10);
-  document.getElementById('set-price').value = cur.gas_price_per_kwh;
-  document.getElementById('set-brennwert').value = cur.brennwert;
-  document.getElementById('set-zustand').value = cur.zustandszahl;
+  if (selectedMeter.type === 'gas') {
+    document.getElementById('set-gas-price').value = cur.gas_price_per_kwh || '';
+    document.getElementById('set-brennwert').value = cur.brennwert || '';
+    document.getElementById('set-zustand').value = cur.zustandszahl || '';
+  } else if (selectedMeter.type === 'strom') {
+    document.getElementById('set-strom-price').value = cur.price_per_kwh || '';
+  } else {
+    document.getElementById('set-wasser-price').value = cur.price_per_m3 || '';
+  }
   document.getElementById('set-note').value = '';
-  var list = document.getElementById('price-history-list');
-  var ph = (CONFIG.price_history || []).slice().reverse();
-  var phHtml = '';
-  ph.forEach(function(e) {
-    var pm3 = e.gas_price_per_kwh * e.brennwert * e.zustandszahl;
-    phHtml += '<div class="price-history-item">';
-    phHtml += '<div class="date">G\u00FCltig ab ' + e.valid_from + '</div>';
-    phHtml += '<div class="values">AP brutto: ' + e.gas_price_per_kwh + ' \u20AC/kWh \u00B7 BW: ' + e.brennwert + ' kWh/m\u00B3 \u00B7 ZZ: ' + e.zustandszahl + '</div>';
-    phHtml += '<div class="computed">\u2192 ' + pm3.toFixed(4) + ' \u20AC/m\u00B3 \u00B7 Umrechnung: ' + (e.brennwert * e.zustandszahl).toFixed(4) + ' kWh/m\u00B3</div>';
-    if (e.note) phHtml += '<div class="note">' + e.note + '</div>';
-    phHtml += '</div>';
-  });
-  list.innerHTML = phHtml;
+  renderPriceHistory();
 }
 
+function renderPriceHistory() {
+  var list = document.getElementById('price-history-list');
+  var ph = (meterConfig.price_history || []).slice().reverse();
+  if (ph.length === 0) { list.innerHTML = '<div class="status-msg" style="color:var(--muted)">Keine Preishistorie. Bitte Preise eintragen.</div>'; return; }
+  var html = '';
+  ph.forEach(function(e) {
+    html += '<div class="price-history-item"><div class="date">G\u00FCltig ab ' + e.valid_from + '</div>';
+    if (selectedMeter.type === 'gas') {
+      var pm3 = (e.gas_price_per_kwh||0) * (e.brennwert||0) * (e.zustandszahl||0);
+      html += '<div class="values">AP: ' + e.gas_price_per_kwh + ' \u20AC/kWh \u00B7 BW: ' + e.brennwert + ' \u00B7 ZZ: ' + e.zustandszahl + '</div>';
+      html += '<div class="computed">\u2192 ' + pm3.toFixed(4) + ' \u20AC/m\u00B3 \u00B7 ' + ((e.brennwert||0)*(e.zustandszahl||0)).toFixed(4) + ' kWh/m\u00B3</div>';
+    } else if (selectedMeter.type === 'strom') {
+      html += '<div class="values">AP: ' + e.price_per_kwh + ' \u20AC/kWh</div>';
+    } else {
+      html += '<div class="values">Preis: ' + e.price_per_m3 + ' \u20AC/m\u00B3</div>';
+    }
+    if (e.note) html += '<div class="note">' + e.note + '</div>';
+    html += '</div>';
+  });
+  list.innerHTML = html;
+}
+
+function collectSettingsEntry() {
+  var d = document.getElementById('set-date').value;
+  var n = document.getElementById('set-note').value;
+  var entry = {valid_from: d};
+  if (n) entry.note = n;
+  if (selectedMeter.type === 'gas') {
+    entry.gas_price_per_kwh = parseFloat(document.getElementById('set-gas-price').value);
+    entry.brennwert = parseFloat(document.getElementById('set-brennwert').value);
+    entry.zustandszahl = parseFloat(document.getElementById('set-zustand').value);
+    if (!d || isNaN(entry.gas_price_per_kwh) || isNaN(entry.brennwert) || isNaN(entry.zustandszahl)) return null;
+  } else if (selectedMeter.type === 'strom') {
+    entry.price_per_kwh = parseFloat(document.getElementById('set-strom-price').value);
+    if (!d || isNaN(entry.price_per_kwh)) return null;
+  } else {
+    entry.price_per_m3 = parseFloat(document.getElementById('set-wasser-price').value);
+    if (!d || isNaN(entry.price_per_m3)) return null;
+  }
+  return entry;
+}
+
+function handleSaveSettings() {
+  var entry = collectSettingsEntry();
+  if (!entry) { alert('Bitte alle Felder ausf\u00FCllen.'); return; }
+  saveSettings(entry);
+}
+
+function saveSettings(newEntry) {
+  showScreen('loading-screen');
+  document.getElementById('loading-text').textContent = 'Einstellungen werden gespeichert...';
+  fetchFile(configPath()).then(function(cfg) {
+    if (cfg.content) { meterConfig = cfg.content; configSha = cfg.sha; }
+    else { meterConfig = getDefaultConfig(); configSha = null; }
+    if (!meterConfig.price_history) meterConfig.price_history = [];
+    meterConfig.price_history.push(newEntry);
+    meterConfig.price_history.sort(function(a,b) { return a.valid_from.localeCompare(b.valid_from); });
+    var msg = selectedMeter.property + ' ' + selectedMeter.name + ': Preis\u00E4nderung ab ' + newEntry.valid_from;
+    return commitFile(configPath(), meterConfig, configSha, msg);
+  }).then(function() {
+    showScreen('settings-done-screen');
+  }).catch(function(e) { showError(e.message); });
+}
+
+/* ===== SUBMIT ===== */
 function handleSubmit() {
   var v = parseFloat(readingInput.replace(',', '.'));
   if (isNaN(v)) return;
   var chk = checkPlausibility(v);
-  if (chk.error) { document.getElementById('error-msg').textContent = chk.msg; showScreen('error-screen'); return; }
+  if (chk.error) { showError(chk.msg); return; }
   if (!chk.ok) {
     pendingValue = v;
     document.getElementById('review-value').textContent = readingInput;
+    document.getElementById('review-unit').textContent = selectedMeter.unit;
     document.getElementById('review-hint').textContent = chk.msg;
     showScreen('review-screen');
     return;
@@ -674,6 +888,13 @@ function handleSubmit() {
   saveReading(v, false);
 }
 
+/* ===== ERROR ===== */
+function showError(msg) {
+  document.getElementById('error-msg').textContent = msg;
+  showScreen('error-screen');
+}
+
+/* ===== INIT ===== */
 function init() {
   checkSetup();
   if (!GITHUB_TOKEN || !GITHUB_REPO) {
@@ -681,51 +902,48 @@ function init() {
     return;
   }
   var hashAction = checkHashAction();
-  loadData().then(function() {
-    if (hashAction && hashAction.action === 'delete') {
-      var entry = null;
-      for (var i = 0; i < readings.length; i++) { if (readings[i].timestamp === hashAction.ts) { entry = readings[i]; break; } }
-      pinFlow(function() {
-        if (!entry) { document.getElementById('error-msg').textContent = 'Eintrag nicht gefunden.'; showScreen('error-screen'); return; }
-        var d = new Date(entry.timestamp);
-        var info = '<div class="review-value" style="color:var(--err)">' + entry.value.toFixed(3) + '</div>';
-        info += '<div class="reading-unit">m\u00B3</div>';
-        info += '<div class="reading-last">' + d.toLocaleDateString('de-DE') + ' ' + d.toLocaleTimeString('de-DE', {hour:'2-digit',minute:'2-digit'});
-        if (entry.suspicious) info += ' \u2014 \u26A0\uFE0F verd\u00E4chtig';
-        info += '</div>';
-        document.getElementById('delete-info').innerHTML = info;
-        document.getElementById('btn-delete-confirm').onclick = function() { deleteReading(hashAction.ts); };
-        document.getElementById('btn-delete-cancel').onclick = function() { readingInput = ''; showScreen('input-screen'); updateReadingDisplay(); };
-        showScreen('delete-screen');
+
+  // Wire up buttons
+  document.getElementById('btn-submit').onclick = handleSubmit;
+  document.getElementById('btn-history').onclick = showHistory;
+  document.getElementById('btn-back-input').onclick = function() { showScreen('input-screen'); };
+  document.getElementById('btn-new-reading').onclick = function() { readingInput = ''; setupInputScreen(); showScreen('input-screen'); };
+  document.getElementById('btn-retry').onclick = function() {
+    if (selectedMeter) { showScreen('input-screen'); } else { buildMeterSelection(); showScreen('meter-screen'); }
+  };
+  document.getElementById('btn-confirm-suspicious').onclick = function() { saveReading(pendingValue, true); pendingValue = null; };
+  document.getElementById('btn-correct').onclick = function() { pendingValue = null; showScreen('input-screen'); };
+  document.getElementById('btn-save-settings').onclick = handleSaveSettings;
+  document.getElementById('btn-back-from-settings').onclick = function() { showScreen('input-screen'); };
+  document.getElementById('btn-settings-done-back').onclick = function() { readingInput = ''; setupInputScreen(); showScreen('input-screen'); };
+
+  pinFlow(function() {
+    if (hashAction && hashAction.meter) {
+      // Deep link to specific meter
+      selectMeterById(hashAction.meter, function() {
+        if (hashAction.action === 'delete') {
+          var entry = null;
+          for (var i = 0; i < readings.length; i++) { if (readings[i].timestamp === hashAction.ts) { entry = readings[i]; break; } }
+          if (!entry) { showError('Eintrag nicht gefunden.'); return; }
+          var d = new Date(entry.timestamp);
+          var info = '<div class="review-value" style="color:var(--err)">' + fmtVal(entry.value) + '</div>';
+          info += '<div class="reading-unit">' + selectedMeter.unit + '</div>';
+          info += '<div class="reading-last">' + d.toLocaleDateString('de-DE') + ' ' + d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+          if (entry.suspicious) info += ' \u2014 \u26A0\uFE0F verd\u00E4chtig';
+          info += '</div>';
+          document.getElementById('delete-info').innerHTML = info;
+          document.getElementById('btn-delete-confirm').onclick = function() { deleteReading(hashAction.ts); };
+          document.getElementById('btn-delete-cancel').onclick = function() { readingInput = ''; setupInputScreen(); showScreen('input-screen'); };
+          showScreen('delete-screen');
+        } else if (hashAction.action === 'settings') {
+          showSettingsScreen();
+        } else {
+          setupInputScreen(); showScreen('input-screen');
+        }
       });
-      return;
+    } else {
+      buildMeterSelection(); showScreen('meter-screen');
     }
-    if (hashAction && hashAction.action === 'settings') {
-      pinFlow(function() { showSettingsScreen(); });
-      return;
-    }
-    pinFlow(function() { showScreen('input-screen'); updateReadingDisplay(); });
-    buildNumpad('input-pad', handleInputKey);
-    document.getElementById('btn-submit').onclick = handleSubmit;
-    document.getElementById('btn-history').onclick = showHistory;
-    document.getElementById('btn-back-input').onclick = function() { showScreen('input-screen'); updateReadingDisplay(); };
-    document.getElementById('btn-new-reading').onclick = function() { readingInput = ''; showScreen('input-screen'); updateReadingDisplay(); };
-    document.getElementById('btn-retry').onclick = function() { showScreen('input-screen'); updateReadingDisplay(); };
-    document.getElementById('btn-confirm-suspicious').onclick = function() { saveReading(pendingValue, true); pendingValue = null; };
-    document.getElementById('btn-correct').onclick = function() { pendingValue = null; showScreen('input-screen'); updateReadingDisplay(); };
-    document.getElementById('btn-save-settings').onclick = function() {
-      var d = document.getElementById('set-date').value;
-      var p = parseFloat(document.getElementById('set-price').value);
-      var b = parseFloat(document.getElementById('set-brennwert').value);
-      var z = parseFloat(document.getElementById('set-zustand').value);
-      var n = document.getElementById('set-note').value;
-      if (!d || isNaN(p) || isNaN(b) || isNaN(z)) { alert('Bitte alle Felder ausf\u00FCllen.'); return; }
-      var entry = {valid_from:d, gas_price_per_kwh:p, brennwert:b, zustandszahl:z};
-      if (n) entry.note = n;
-      saveSettings(entry);
-    };
-    document.getElementById('btn-back-from-settings').onclick = function() { showScreen('input-screen'); updateReadingDisplay(); };
-    document.getElementById('btn-settings-done-back').onclick = function() { readingInput = ''; showScreen('input-screen'); updateReadingDisplay(); };
   });
 }
 

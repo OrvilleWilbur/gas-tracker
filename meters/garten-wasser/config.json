@@ -1,0 +1,9 @@
+{
+  "meter_id": "8DME7681184933/001",
+  "type": "wasser",
+  "initial_reading": 0,
+  "max_daily_consumption": 5,
+  "plausibility_factor": 3.0,
+  "owner": "Thüringer Fernwasser",
+  "price_history": []
+}

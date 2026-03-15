@@ -1,0 +1,61 @@
+{
+  "meter_id": "435034120",
+  "readings": [
+    {
+      "timestamp": "2019-12-31T12:00:00+01:00",
+      "value": 893.14,
+      "consumption": null,
+      "days_since_last": null,
+      "daily_avg": null,
+      "suspicious": false
+    },
+    {
+      "timestamp": "2020-12-31T12:00:00+01:00",
+      "value": 911.57,
+      "consumption": 18.43,
+      "days_since_last": 366,
+      "daily_avg": 0.05,
+      "suspicious": false
+    },
+    {
+      "timestamp": "2021-12-31T12:00:00+01:00",
+      "value": 925.5,
+      "consumption": 13.93,
+      "days_since_last": 365,
+      "daily_avg": 0.038,
+      "suspicious": false
+    },
+    {
+      "timestamp": "2022-12-31T12:00:00+01:00",
+      "value": 719.58,
+      "consumption": null,
+      "days_since_last": 365,
+      "daily_avg": null,
+      "suspicious": true
+    },
+    {
+      "timestamp": "2023-12-31T12:00:00+01:00",
+      "value": 951.97,
+      "consumption": 232.39,
+      "days_since_last": 365,
+      "daily_avg": 0.637,
+      "suspicious": true
+    },
+    {
+      "timestamp": "2024-12-31T12:00:00+01:00",
+      "value": 965.72,
+      "consumption": 13.75,
+      "days_since_last": 366,
+      "daily_avg": 0.038,
+      "suspicious": false
+    },
+    {
+      "timestamp": "2026-02-18T12:00:00+01:00",
+      "value": 974.345,
+      "consumption": 8.625,
+      "days_since_last": 49,
+      "daily_avg": 0.176,
+      "suspicious": false
+    }
+  ]
+}

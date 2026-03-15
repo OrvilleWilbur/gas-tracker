@@ -1,0 +1,14 @@
+{
+  "meter_id": "110252214",
+  "type": "wasser",
+  "initial_reading": 0,
+  "max_daily_consumption": 2,
+  "plausibility_factor": 3.0,
+  "owner": "ista/Hausverwaltung",
+  "old_meter": {
+    "meter_id": "621628669",
+    "final_reading": 22.93,
+    "swap_date": "2021"
+  },
+  "price_history": []
+}

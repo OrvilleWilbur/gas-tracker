@@ -1,0 +1,13 @@
+{
+  "meter_id": "1DZG0061092460",
+  "readings": [
+    {
+      "timestamp": "2025-08-08T12:00:00+02:00",
+      "value": 6853,
+      "consumption": null,
+      "days_since_last": null,
+      "daily_avg": null,
+      "suspicious": false
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "meter_id": "3642851",
+  "readings": [
+    {
+      "timestamp": "2025-12-07T12:00:00+01:00",
+      "value": 10031,
+      "consumption": null,
+      "days_since_last": null,
+      "daily_avg": null,
+      "suspicious": false
+    }
+  ]
+}

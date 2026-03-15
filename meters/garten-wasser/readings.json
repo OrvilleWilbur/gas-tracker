@@ -1,0 +1,13 @@
+{
+  "meter_id": "8DME7681184933/001",
+  "readings": [
+    {
+      "timestamp": "2025-12-31T12:00:00+01:00",
+      "value": 16.633,
+      "consumption": null,
+      "days_since_last": null,
+      "daily_avg": null,
+      "suspicious": false
+    }
+  ]
+}

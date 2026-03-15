@@ -1,0 +1,9 @@
+{
+  "meter_id": "435034120",
+  "type": "wasser",
+  "initial_reading": 0,
+  "max_daily_consumption": 5,
+  "plausibility_factor": 3.0,
+  "owner": "ista/Hausverwaltung",
+  "price_history": []
+}
