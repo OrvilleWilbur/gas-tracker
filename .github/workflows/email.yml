@@ -1,16 +1,22 @@
-name: Gas Tracker Email
+name: Utility Tracker Email
 
 on:
   push:
     paths:
-      - 'readings.json'
+      - 'meters/*/readings.json'
   workflow_dispatch:
+    inputs:
+      meter_id:
+        description: 'Meter ID (z.B. fritz-gas, garten-strom)'
+        required: true
 
 jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - uses: actions/setup-python@v5
         with:
@@ -19,10 +25,22 @@ jobs:
       - name: Install dependencies
         run: pip install matplotlib
 
+      - name: Detect changed meter
+        id: meter
+        run: |
+          if [ -n "${{ github.event.inputs.meter_id }}" ]; then
+            echo "meter_id=${{ github.event.inputs.meter_id }}" >> $GITHUB_OUTPUT
+          else
+            CHANGED=$(git diff --name-only HEAD~1 HEAD | grep 'meters/.*/readings.json' | head -1)
+            METER_ID=$(echo "$CHANGED" | sed 's|meters/||;s|/readings.json||')
+            echo "meter_id=$METER_ID" >> $GITHUB_OUTPUT
+          fi
+
       - name: Send notification email
+        if: steps.meter.outputs.meter_id != ''
         env:
           SMTP_EMAIL: ${{ secrets.SMTP_EMAIL }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
           GH_PAT: ${{ secrets.GH_PAT }}
-        run: python send_email.py
+        run: python send_email.py ${{ steps.meter.outputs.meter_id }}
