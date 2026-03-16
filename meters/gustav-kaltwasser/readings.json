@@ -3,7 +3,8 @@
   "readings": [
     {
       "timestamp": "2019-12-31T12:00:00+01:00",
-      "value": 893.14,
+      "value": 416.54,
+      "source": "BKA 2020, ALT-Wert (ista)",
       "consumption": null,
       "days_since_last": null,
       "daily_avg": null,
@@ -11,50 +12,56 @@
     },
     {
       "timestamp": "2020-12-31T12:00:00+01:00",
-      "value": 911.57,
-      "consumption": 18.43,
+      "value": 524.39,
+      "source": "BKA 2020, NEU-Wert (ista)",
+      "consumption": 107.85,
       "days_since_last": 366,
-      "daily_avg": 0.05,
+      "daily_avg": 0.295,
       "suspicious": false
     },
     {
       "timestamp": "2021-12-31T12:00:00+01:00",
-      "value": 925.5,
-      "consumption": 13.93,
+      "value": 635.07,
+      "source": "BKA 2021, NEU-Wert (ista)",
+      "consumption": 110.68,
       "days_since_last": 365,
-      "daily_avg": 0.038,
+      "daily_avg": 0.303,
       "suspicious": false
     },
     {
       "timestamp": "2022-12-31T12:00:00+01:00",
       "value": 719.58,
-      "consumption": null,
+      "source": "BKA 2023, ALT-Wert (ista, 2022-PDF nicht OCR-lesbar)",
+      "consumption": 84.51,
       "days_since_last": 365,
-      "daily_avg": null,
-      "suspicious": true
+      "daily_avg": 0.232,
+      "suspicious": false
     },
     {
       "timestamp": "2023-12-31T12:00:00+01:00",
-      "value": 951.97,
-      "consumption": 232.39,
+      "value": 801.96,
+      "source": "BKA 2023, NEU-Wert (ista)",
+      "consumption": 82.38,
       "days_since_last": 365,
-      "daily_avg": 0.637,
-      "suspicious": true
+      "daily_avg": 0.226,
+      "suspicious": false
     },
     {
       "timestamp": "2024-12-31T12:00:00+01:00",
-      "value": 965.72,
-      "consumption": 13.75,
+      "value": 883.4,
+      "source": "BKA 2024, NEU-Wert (ista)",
+      "consumption": 81.44,
       "days_since_last": 366,
-      "daily_avg": 0.038,
+      "daily_avg": 0.223,
       "suspicious": false
     },
     {
       "timestamp": "2026-02-18T12:00:00+01:00",
       "value": 974.345,
-      "consumption": 8.625,
-      "days_since_last": 49,
-      "daily_avg": 0.176,
+      "source": "Foto Zählerablesung vor Ort",
+      "consumption": 90.945,
+      "days_since_last": 414,
+      "daily_avg": 0.22,
       "suspicious": false
     }
   ]
