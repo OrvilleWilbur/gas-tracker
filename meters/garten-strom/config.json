@@ -4,27 +4,38 @@
   "initial_reading": 0,
   "max_daily_consumption": 50,
   "plausibility_factor": 3.0,
-  "owner": "SWE",
+  "owner": "SWE Energie GmbH",
   "price_history": [
     {
+      "valid_from": "2018-09-01",
+      "price_per_kwh": 0.2623,
+      "note": "22,04 ct netto + 19% MwSt, Strom.mini, Rechnung 2019"
+    },
+    {
+      "valid_from": "2019-01-01",
+      "price_per_kwh": 0.2741,
+      "note": "23,03 ct netto + 19% MwSt, Strom.mini, Rechnung 2019"
+    },
+    {
       "valid_from": "2020-01-01",
-      "price_per_kwh": 0.29429,
-      "note": "AP 0.24730 netto + 19% MwSt, Tarif Strom.mini, Quelle: Rechnung 2020"
+      "price_per_kwh": 0.2943,
+      "note": "24,73 ct netto + 19% MwSt, Strom.mini, Rechnung 2020"
     },
     {
       "valid_from": "2022-07-01",
-      "price_per_kwh": 0.24998,
-      "note": "AP 0.21007 netto + 19% MwSt, EEG-Umlage entfallen, Quelle: Rechnung 2023"
+      "price_per_kwh": 0.25,
+      "note": "21,007 ct netto + 19% MwSt, Strom.mini SV, EEG-Umlage entfallen, Rechnung 2023"
     },
     {
       "valid_from": "2022-10-01",
-      "price_per_kwh": 0.36069,
-      "note": "AP 0.30310 netto + 19% MwSt, Strom.mini SV, Quelle: Rechnung 2023"
+      "price_per_kwh": 0.3607,
+      "note": "30,31 ct netto + 19% MwSt, Strom.mini SV, Rechnung 2023"
     },
     {
       "valid_from": "2025-01-01",
-      "price_per_kwh": 0.34938,
-      "note": "AP 0.29360 netto + 19% MwSt, Tarif Strom.fam SV, Quelle: Rechnung 2025"
+      "price_per_kwh": 0.3494,
+      "note": "29,36 ct netto + 19% MwSt, Strom.fam SV, Rechnung 2025"
     }
-  ]
+  ],
+  "unit": "kWh"
 }
