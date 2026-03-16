@@ -43,9 +43,9 @@ METER_INFO = {
     'gustav-strom':      {'name': 'Strom',        'property': 'Gustav-Adolf-Str.', 'type': 'strom',  'icon': '⚡', 'unit': 'kWh', 'dec': 1},
     'gustav-kaltwasser': {'name': 'Kaltwasser',   'property': 'Gustav-Adolf-Str.', 'type': 'wasser', 'icon': '💧', 'unit': 'm³',  'dec': 3},
     'gustav-warmwasser': {'name': 'Warmwasser',   'property': 'Gustav-Adolf-Str.', 'type': 'wasser', 'icon': '🔴', 'unit': 'm³',  'dec': 3},
-    'fritz-gas':         {'name': 'Gas',          'property': 'Fritz-Haber-Str.',  'type': 'gas',    'icon': '🔥', 'unit': 'm³',  'dec': 3},
-    'fritz-strom1':      {'name': 'Strom HT',     'property': 'Fritz-Haber-Str.',  'type': 'strom',  'icon': '⚡', 'unit': 'kWh', 'dec': 1},
-    'fritz-strom2':      {'name': 'Strom NT',     'property': 'Fritz-Haber-Str.',  'type': 'strom',  'icon': '⚡', 'unit': 'kWh', 'dec': 1},
+    'fritz-gas':         {'name': 'Gas',          'property': 'Schmiedefeld',  'type': 'gas',    'icon': '🔥', 'unit': 'm³',  'dec': 3},
+    'fritz-strom1':      {'name': 'Strom HT',     'property': 'Schmiedefeld',  'type': 'strom',  'icon': '⚡', 'unit': 'kWh', 'dec': 1},
+    'fritz-strom2':      {'name': 'Strom NT',     'property': 'Schmiedefeld',  'type': 'strom',  'icon': '⚡', 'unit': 'kWh', 'dec': 1},
 }
 
 

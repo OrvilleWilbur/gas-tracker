@@ -5,5 +5,16 @@
   "max_daily_consumption": 50,
   "plausibility_factor": 3.0,
   "owner": "SWE",
-  "price_history": []
+  "price_history": [
+    {
+      "valid_from": "2020-01-01",
+      "price_per_kwh": 0.26501,
+      "note": "AP 0.22270 netto + 19% MwSt, Tarif Strom.natur maxi, Quelle: Rechnung 2020"
+    },
+    {
+      "valid_from": "2022-10-01",
+      "price_per_kwh": 0.33142,
+      "note": "AP 0.27850 netto + 19% MwSt, Strom.natur maxi SV, Quelle: Rechnung 2023"
+    }
+  ]
 }

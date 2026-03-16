@@ -5,5 +5,26 @@
   "max_daily_consumption": 5,
   "plausibility_factor": 3.0,
   "owner": "ista/Hausverwaltung",
-  "price_history": []
+  "price_history": [
+    {
+      "valid_from": "2020-01-01",
+      "price_per_m3": 2.1146,
+      "note": "Gebäude-Umlage brutto (K+W), Quelle: BKA 2020"
+    },
+    {
+      "valid_from": "2021-01-01",
+      "price_per_m3": 2.3638,
+      "note": "Gebäude-Umlage brutto (K+W), Quelle: BKA 2021"
+    },
+    {
+      "valid_from": "2023-01-01",
+      "price_per_m3": 2.3065,
+      "note": "Gebäude-Umlage brutto (K+W), Quelle: BKA 2023"
+    },
+    {
+      "valid_from": "2024-01-01",
+      "price_per_m3": 2.2445,
+      "note": "Gebäude-Umlage brutto (K+W), Quelle: BKA 2024"
+    }
+  ]
 }

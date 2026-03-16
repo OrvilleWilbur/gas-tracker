@@ -2,8 +2,19 @@
   "meter_id": "3642851",
   "type": "strom",
   "initial_reading": 0,
-  "max_daily_consumption": 100,
+  "max_daily_consumption": 30,
   "plausibility_factor": 3.0,
-  "owner": "TEAG",
-  "price_history": []
+  "owner": "SWSZ",
+  "price_history": [
+    {
+      "valid_from": "2023-09-06",
+      "price_per_kwh": 0.32428,
+      "note": "AP 0.2725 netto + 19% MwSt, RennsteigSTROM Wasserkraft, Quelle: Rechnung T24-030165"
+    },
+    {
+      "valid_from": "2024-01-01",
+      "price_per_kwh": 0.40710,
+      "note": "AP 0.3421 netto + 19% MwSt, RennsteigSTROM Wasserkraft, Quelle: Rechnung T24-030165"
+    }
+  ]
 }
