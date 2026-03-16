@@ -1,7 +1,7 @@
 {
   "meter_id": "110252214",
   "type": "wasser",
-  "initial_reading": 0.12,
+  "initial_reading": 0,
   "max_daily_consumption": 2,
   "plausibility_factor": 3.0,
   "owner": "ista/Hausverwaltung",
@@ -12,9 +12,10 @@
   },
   "price_history": [
     {
-      "valid_from": "2024-01-01",
+      "valid_from": "2020-01-01",
       "price_per_m3": 18.64,
-      "note": "Näherung: BKA 2024 Warmwasser-Anteil ~591 EUR / 31.71 m³. HKVO-Umlage, kein echter Versorgerpreis"
+      "note": "Näherungswert aus BKA 2024 HKVO (30% Grund + 70% Verbrauch), kein echter Versorgerpreis"
     }
-  ]
+  ],
+  "unit": "m³"
 }
