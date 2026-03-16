@@ -7,14 +7,20 @@
   "owner": "SWE",
   "price_history": [
     {
-      "valid_from": "2020-01-01",
-      "price_per_kwh": 0.26501,
-      "note": "AP 0.22270 netto + 19% MwSt, Tarif Strom.natur maxi, Quelle: Rechnung 2020"
+      "valid_from": "2020-04-01",
+      "price_per_kwh": 0.2999,
+      "note": "25,20 ct netto + 19% MwSt, Strom.natur maxi SV, Rechnung 2020"
     },
     {
       "valid_from": "2022-10-01",
-      "price_per_kwh": 0.33142,
-      "note": "AP 0.27850 netto + 19% MwSt, Strom.natur maxi SV, Quelle: Rechnung 2023"
+      "price_per_kwh": 0.3829,
+      "note": "32,18 ct netto + 19% MwSt, Strom.natur maxi SV, Rechnung 2023"
+    },
+    {
+      "valid_from": "2025-01-01",
+      "price_per_kwh": 0.3314,
+      "note": "27,85 ct netto + 19% MwSt, Strom.natur maxi SV, Rechnung 2025"
     }
-  ]
+  ],
+  "unit": "kWh"
 }
