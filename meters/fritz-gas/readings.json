@@ -71,7 +71,8 @@
       "consumption": 68.697,
       "days_since_last": 8.01,
       "daily_avg": 8.577,
-      "suspicious": false
+      "suspicious": false,
+      "source": "App-Eingabe User"
     }
   ]
 }
