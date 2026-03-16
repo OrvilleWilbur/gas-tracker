@@ -212,21 +212,22 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
 
 <script>
 /* ===== CONSTANTS ===== */
-var APP_PIN = '9999';
+var AUTH_URL = 'auth.json';
 var METERS = [
   {id:'garten-strom',name:'Strom',property:'Garten',propIcon:'\uD83C\uDFE1',type:'strom',icon:'\u26A1',unit:'kWh',meter_nr:'36315107'},
   {id:'garten-wasser',name:'Wasser',property:'Garten',propIcon:'\uD83C\uDFE1',type:'wasser',icon:'\uD83D\uDCA7',unit:'m\u00B3',meter_nr:'8DME7681184933/001'},
   {id:'gustav-strom',name:'Strom',property:'Gustav-Adolf-Str.',propIcon:'\uD83C\uDFE0',type:'strom',icon:'\u26A1',unit:'kWh',meter_nr:'1DZG0061092460'},
   {id:'gustav-kaltwasser',name:'Kaltwasser',property:'Gustav-Adolf-Str.',propIcon:'\uD83C\uDFE0',type:'wasser',icon:'\uD83D\uDCA7',unit:'m\u00B3',meter_nr:'435034120'},
   {id:'gustav-warmwasser',name:'Warmwasser',property:'Gustav-Adolf-Str.',propIcon:'\uD83C\uDFE0',type:'wasser',icon:'\uD83D\uDD34',unit:'m\u00B3',meter_nr:'110252214'},
-  {id:'fritz-gas',name:'Gas',property:'Fritz-Haber-Str.',propIcon:'\uD83C\uDFE0',type:'gas',icon:'\uD83D\uDD25',unit:'m\u00B3',meter_nr:'7ELS2541479709'},
-  {id:'fritz-strom1',name:'Strom HT',property:'Fritz-Haber-Str.',propIcon:'\uD83C\uDFE0',type:'strom',icon:'\u26A1',unit:'kWh',meter_nr:'3642851'},
-  {id:'fritz-strom2',name:'Strom NT',property:'Fritz-Haber-Str.',propIcon:'\uD83C\uDFE0',type:'strom',icon:'\u26A1',unit:'kWh',meter_nr:'3642841'}
+  {id:'fritz-gas',name:'Gas',property:'Schmiedefeld',propIcon:'\uD83C\uDFD4\uFE0F',type:'gas',icon:'\uD83D\uDD25',unit:'m\u00B3',meter_nr:'7ELS2541479709'},
+  {id:'fritz-strom1',name:'Strom HT',property:'Schmiedefeld',propIcon:'\uD83C\uDFD4\uFE0F',type:'strom',icon:'\u26A1',unit:'kWh',meter_nr:'3642851'},
+  {id:'fritz-strom2',name:'Strom NT',property:'Schmiedefeld',propIcon:'\uD83C\uDFD4\uFE0F',type:'strom',icon:'\u26A1',unit:'kWh',meter_nr:'3642841'}
 ];
 
 /* ===== STATE ===== */
-var GITHUB_REPO = localStorage.getItem('gt_repo') || '';
-var GITHUB_TOKEN = localStorage.getItem('gt_token') || '';
+var GITHUB_REPO = '';
+var GITHUB_TOKEN = '';
+var authData = null;
 var selectedMeter = null;
 var meterConfig = {};
 var readings = [];
@@ -301,19 +302,48 @@ function fmtLock(ms) {
   return m + ' min';
 }
 
-/* ===== SETUP & HASH ===== */
-function checkSetup() {
-  var h = window.location.hash;
-  if (h.indexOf('setup=') !== -1) {
-    var p = new URLSearchParams(h.substring(1));
-    var t = p.get('setup'), r = p.get('repo');
-    if (t) { localStorage.setItem('gt_token', t); GITHUB_TOKEN = t; }
-    if (r) { localStorage.setItem('gt_repo', r); GITHUB_REPO = r; }
-    p.delete('setup'); p.delete('repo');
-    var rest = p.toString();
-    if (rest) window.location.hash = rest;
-    else { window.location.hash = ''; history.replaceState(null, '', window.location.pathname); }
-  }
+/* ===== CRYPTO: PIN-based token decryption ===== */
+function b64toBytes(b64) {
+  var bin = atob(b64), arr = new Uint8Array(bin.length);
+  for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return arr;
+}
+
+function deriveKey(pin, salt, iterations) {
+  var enc = new TextEncoder();
+  return crypto.subtle.importKey('raw', enc.encode(pin), 'PBKDF2', false, ['deriveKey'])
+    .then(function(keyMaterial) {
+      return crypto.subtle.deriveKey(
+        {name: 'PBKDF2', salt: salt, iterations: iterations, hash: 'SHA-256'},
+        keyMaterial,
+        {name: 'AES-GCM', length: 256},
+        false,
+        ['decrypt']
+      );
+    });
+}
+
+function decryptAuth(pin) {
+  if (!authData) return Promise.reject(new Error('Auth nicht geladen'));
+  var salt = b64toBytes(authData.salt);
+  var iv = b64toBytes(authData.iv);
+  var data = b64toBytes(authData.data);
+  return deriveKey(pin, salt, authData.iterations || 100000)
+    .then(function(key) {
+      return crypto.subtle.decrypt({name: 'AES-GCM', iv: iv}, key, data);
+    })
+    .then(function(decrypted) {
+      var json = JSON.parse(new TextDecoder().decode(decrypted));
+      GITHUB_TOKEN = json.token;
+      GITHUB_REPO = json.repo;
+      return true;
+    });
+}
+
+function loadAuth() {
+  return fetch(AUTH_URL + '?t=' + Date.now())
+    .then(function(r) { if (!r.ok) throw new Error('auth.json: ' + r.status); return r.json(); })
+    .then(function(d) { authData = d; });
 }
 
 function checkHashAction() {
@@ -364,6 +394,7 @@ function pinFlow(onSuccess) {
   pinInput = ''; updatePinDots(false); showScreen('pin-screen');
   var h2 = document.getElementById('pin-screen').querySelector('h2');
   var lockTimer = null;
+  var trying = false;
   function checkLocked() {
     var lo = getLockout(), rem = lo.until - Date.now();
     if (lo.fails >= 3 && rem > 0) {
@@ -381,20 +412,24 @@ function pinFlow(onSuccess) {
   }
   checkLocked();
   buildNumpad('pin-pad', function(key) {
-    if (checkLocked()) return;
+    if (checkLocked() || trying) return;
     if (key === 'del') { pinInput = pinInput.slice(0,-1); updatePinDots(false); return; }
     if (pinInput.length >= 4) return;
     pinInput += key; updatePinDots(false);
     if (pinInput.length === 4) {
-      if (pinInput === APP_PIN) {
+      trying = true;
+      h2.textContent = 'Pr\u00FCfe...'; h2.style.color = 'var(--muted)';
+      decryptAuth(pinInput).then(function() {
         resetLockout(); if (lockTimer) clearInterval(lockTimer);
+        trying = false;
         setTimeout(onSuccess, 200);
-      } else {
+      }).catch(function() {
+        trying = false;
         var lo = getLockout(), nf = lo.fails + 1;
         if (nf >= 3) setLockout(nf, Date.now() + lockDur(nf)); else setLockout(nf, 0);
         updatePinDots(true);
         setTimeout(function() { pinInput = ''; updatePinDots(false); checkLocked(); }, 600);
-      }
+      });
     }
   });
 }
@@ -896,11 +931,6 @@ function showError(msg) {
 
 /* ===== INIT ===== */
 function init() {
-  checkSetup();
-  if (!GITHUB_TOKEN || !GITHUB_REPO) {
-    document.getElementById('pin-screen').querySelector('h2').textContent = 'Setup fehlt! Bitte Admin-Link verwenden.';
-    return;
-  }
   var hashAction = checkHashAction();
 
   // Wire up buttons
@@ -917,7 +947,17 @@ function init() {
   document.getElementById('btn-back-from-settings').onclick = function() { showScreen('input-screen'); };
   document.getElementById('btn-settings-done-back').onclick = function() { readingInput = ''; setupInputScreen(); showScreen('input-screen'); };
 
-  pinFlow(function() {
+  // Load encrypted auth, then show PIN
+  var h2 = document.getElementById('pin-screen').querySelector('h2');
+  h2.textContent = 'Laden...'; h2.style.color = 'var(--muted)';
+  loadAuth().then(function() {
+    h2.textContent = 'PIN eingeben'; h2.style.color = '';
+    pinFlow(afterPin);
+  }).catch(function(e) {
+    h2.textContent = 'Fehler: ' + e.message; h2.style.color = 'var(--err)';
+  });
+
+  function afterPin() {
     if (hashAction && hashAction.meter) {
       // Deep link to specific meter
       selectMeterById(hashAction.meter, function() {
@@ -944,7 +984,7 @@ function init() {
     } else {
       buildMeterSelection(); showScreen('meter-screen');
     }
-  });
+  }
 }
 
 init();
