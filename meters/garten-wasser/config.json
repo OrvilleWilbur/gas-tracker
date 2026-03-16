@@ -1,15 +1,16 @@
 {
   "meter_id": "8DME7681184933/001",
   "type": "wasser",
-  "initial_reading": 0.2,
+  "initial_reading": 0,
   "max_daily_consumption": 5,
   "plausibility_factor": 3.0,
-  "owner": "ThüWa",
+  "owner": "ThüWa ThüringenWasser GmbH",
   "price_history": [
     {
       "valid_from": "2012-01-01",
       "price_per_m3": 1.9581,
-      "note": "1.83 EUR/m³ netto + 7% MwSt, Preis konstant seit Beginn, Quelle: Rechnung 2013"
+      "note": "1,83 EUR/m³ netto + 7% MwSt, konstant seit 2012, Rechnung 2013"
     }
-  ]
+  ],
+  "unit": "m³"
 }
