@@ -8,13 +8,14 @@
   "price_history": [
     {
       "valid_from": "2023-09-06",
-      "price_per_kwh": 0.32428,
-      "note": "AP 0.2725 netto + 19% MwSt, RennsteigSTROM Wasserkraft, Quelle: Rechnung T24-030165"
+      "price_per_kwh": 0.3188,
+      "note": "27,25 ct netto + 17% (EEG+MwSt), RennsteigSTROM Wasserkraft, Rechnung T24-030165"
     },
     {
       "valid_from": "2024-01-01",
-      "price_per_kwh": 0.40710,
-      "note": "AP 0.3421 netto + 19% MwSt, RennsteigSTROM Wasserkraft, Quelle: Rechnung T24-030165"
+      "price_per_kwh": 0.4071,
+      "note": "34,21 ct netto + 19% MwSt, RennsteigSTROM Wasserkraft, Rechrung T24-030165"
     }
-  ]
+  ],
+  "unit": "kWh"
 }
