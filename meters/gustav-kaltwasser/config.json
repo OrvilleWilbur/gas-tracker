@@ -8,23 +8,24 @@
   "price_history": [
     {
       "valid_from": "2020-01-01",
-      "price_per_m3": 2.1146,
-      "note": "Gebäude-Umlage brutto (K+W), Quelle: BKA 2020"
+      "price_per_m3": 5.06,
+      "note": "BKA 2020, Gebäude-Umlage K+W brutto"
     },
     {
       "valid_from": "2021-01-01",
-      "price_per_m3": 2.3638,
-      "note": "Gebäude-Umlage brutto (K+W), Quelle: BKA 2021"
+      "price_per_m3": 4.7,
+      "note": "BKA 2021, Gebäude-Umlage K+W brutto"
     },
     {
       "valid_from": "2023-01-01",
-      "price_per_m3": 2.3065,
-      "note": "Gebäude-Umlage brutto (K+W), Quelle: BKA 2023"
+      "price_per_m3": 5.93,
+      "note": "BKA 2023, Gebäude-Umlage K+W brutto"
     },
     {
       "valid_from": "2024-01-01",
-      "price_per_m3": 2.2445,
-      "note": "Gebäude-Umlage brutto (K+W), Quelle: BKA 2024"
+      "price_per_m3": 6.1,
+      "note": "BKA 2024, Gebäude-Umlage K+W brutto (geschätzt)"
     }
-  ]
+  ],
+  "unit": "m³"
 }
