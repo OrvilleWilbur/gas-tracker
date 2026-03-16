@@ -2,11 +2,48 @@
   "meter_id": "3642841",
   "readings": [
     {
-      "timestamp": "2025-12-07T12:00:00+01:00",
-      "value": 61201,
+      "timestamp": "2023-10-03T12:00:00+01:00",
+      "value": 57568,
+      "source": "Rechnung SWSZ Strom T24-030078, Periodenstart",
       "consumption": null,
       "days_since_last": null,
       "daily_avg": null,
+      "suspicious": false
+    },
+    {
+      "timestamp": "2023-12-19T12:00:00+01:00",
+      "value": 57941,
+      "source": "Rechnung SWSZ Strom T24-030078, Zwischenablesung",
+      "consumption": 370,
+      "days_since_last": 77,
+      "daily_avg": 4.844,
+      "suspicious": false
+    },
+    {
+      "timestamp": "2024-10-04T12:00:00+01:00",
+      "value": 59254,
+      "source": "Rechnung SWSZ Strom T24-030078, Endstand",
+      "consumption": 1313,
+      "days_since_last": 290,
+      "daily_avg": 4.528,
+      "suspicious": false
+    },
+    {
+      "timestamp": "2025-09-22T12:00:00+01:00",
+      "value": 60876,
+      "source": "SWSZ-Kundenportal",
+      "consumption": 1622,
+      "days_since_last": 353,
+      "daily_avg": 4.595,
+      "suspicious": false
+    },
+    {
+      "timestamp": "2025-12-07T12:00:00+01:00",
+      "value": 61201,
+      "source": "SWSZ-Kundenportal",
+      "consumption": 325,
+      "days_since_last": 76,
+      "daily_avg": 4.276,
       "suspicious": false
     }
   ]
