@@ -2,11 +2,75 @@
   "meter_id": "36315107",
   "readings": [
     {
-      "timestamp": "2025-07-12T12:00:00+02:00",
-      "value": 2817,
+      "timestamp": "2018-06-06T12:00:00+01:00",
+      "value": 0,
+      "source": "Einbau, Rechnung SWE Strom-KRU 2018",
       "consumption": null,
       "days_since_last": null,
       "daily_avg": null,
+      "suspicious": false
+    },
+    {
+      "timestamp": "2018-07-05T12:00:00+01:00",
+      "value": 41,
+      "source": "Rechnung SWE Strom-KRU 2018 (Schätzung)",
+      "consumption": 41,
+      "days_since_last": 29,
+      "daily_avg": 1.414,
+      "suspicious": false
+    },
+    {
+      "timestamp": "2019-07-06T12:00:00+01:00",
+      "value": 328,
+      "source": "Rechnung SWE Strom KRU 2019 (Kundenablesung)",
+      "consumption": 287,
+      "days_since_last": 366,
+      "daily_avg": 0.784,
+      "suspicious": false
+    },
+    {
+      "timestamp": "2020-07-26T12:00:00+01:00",
+      "value": 748,
+      "source": "Rechnung SWE Strom KRU 2020 (Kundenablesung)",
+      "consumption": 420,
+      "days_since_last": 386,
+      "daily_avg": 1.088,
+      "suspicious": false
+    },
+    {
+      "timestamp": "2022-07-02T12:00:00+01:00",
+      "value": 1080,
+      "source": "Rechnung SWE Strom-KRU 2023, Periodenstart (Schätzung)",
+      "consumption": 332,
+      "days_since_last": 706,
+      "daily_avg": 0.47,
+      "suspicious": false
+    },
+    {
+      "timestamp": "2023-06-27T12:00:00+01:00",
+      "value": 1304,
+      "source": "Rechnung SWE Strom-KRU 2023 (Kundenablesung)",
+      "consumption": 224,
+      "days_since_last": 360,
+      "daily_avg": 0.622,
+      "suspicious": false
+    },
+    {
+      "timestamp": "2024-08-02T12:00:00+01:00",
+      "value": 1873,
+      "source": "Rechnung SWE Strom-KRU 2024 (Kundenablesung)",
+      "consumption": 569,
+      "days_since_last": 402,
+      "daily_avg": 1.415,
+      "suspicious": false
+    },
+    {
+      "timestamp": "2025-07-12T12:00:00+01:00",
+      "value": 2817,
+      "source": "Rechnung SWE Strom-KRU 2025 (Kundenablesung)",
+      "consumption": 944,
+      "days_since_last": 344,
+      "daily_avg": 2.744,
       "suspicious": false
     }
   ]
