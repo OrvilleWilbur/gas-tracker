@@ -712,7 +712,7 @@ function buildChart() {
   var isKwh = selectedMeter.type === 'gas' || selectedMeter.type === 'strom';
   titleEl.textContent = isKwh ? 'Tagesverbrauch kWh/d' : 'Tagesverbrauch l/d';
 
-  var W = 380, H = 180, padT = 20, padR = 38, padB = 36, padL = 42;
+  var W = 380, H = 180, padT = 20, padR = 15, padB = 36, padL = 42;
   var cw = W - padL - padR, ch = H - padT - padB;
   var pts = dp.map(function(r) {
     var val;
@@ -725,10 +725,6 @@ function buildChart() {
   var minT = pts[0].date.getTime(), maxT = pts[pts.length-1].date.getTime();
   var maxV = Math.max.apply(null, pts.map(function(p) { return p.val; })) * 1.15;
   if (maxV === 0) maxV = 1;
-    var _hp = hasPrices();
-    var maxC = _hp ? Math.max.apply(null, pts.map(function(p) { return p.cday || 0; })) * 1.15 : 1;
-    if (maxC === 0) maxC = 1;
-    function yC(v) { return padT + ch - (v / maxC) * ch; }
   function x(d) { return padL + (maxT === minT ? cw/2 : ((d.getTime()-minT)/(maxT-minT))*cw); }
   function y(v) { return padT + ch - (v/maxV)*ch; }
 
@@ -755,24 +751,16 @@ function buildChart() {
   pts.forEach(function(p) {
     var cx = x(p.date), cy = y(p.val);
     dots += '<circle cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="3.5" fill="'+typeColor+'" stroke="#0f172a" stroke-width="1.5"/>';
-    dots += '<text x="'+cx.toFixed(1)+'" y="'+(cy-8).toFixed(1)+'" text-anchor="middle" fill="#f1f5f9" font-size="9" font-weight="600">'+p.val.toFixed(1)+'</text>';
+    dots += '<text x="'+cx.toFixed(1)+'" y="'+(cy-8).toFixed(1)+'" text-anchor="middle" fill="#f1f5f9" font-size="9" font-weight="600">'+p.val.toFixed(1)+'</text>'+(p.cday?'<text x="'+x(p.date).toFixed(1)+'" y="'+(y(p.val)+2).toFixed(1)+'" text-anchor="middle" fill="#10b981" font-size="7">'+p.cday.toFixed(2)+'\u20AC</text>':'');
   });
 
-  var costSvg = '';
-    if (_hp && pts.length > 1) {
-      var cPath = 'M';
-      pts.forEach(function(p,i) { cPath += (i?'L':'') + x(p.date).toFixed(1) + ',' + yC(p.cday||0).toFixed(1); });
-      costSvg = '<path d="' + cPath + '" fill="none" stroke="#10b981" stroke-width="1.5" stroke-dasharray="4,3" stroke-linecap="round"/>';
-      for(var ci=0;ci<=4;ci++){var cv=(maxC/4/1.15)*ci;costSvg+='<text x="'+(W-padR+5)+'" y="'+(yC(cv)+3)+'" fill="#10b981" font-size="9">'+cv.toFixed(2)+'</text>';}
-      costSvg+='<text x="'+(W-2)+'" y="'+(padT-4)+'" text-anchor="end" fill="#10b981" font-size="8">\u20AC/d</text>';
-    }
-    svgEl.innerHTML = '<svg viewBox="0 0 '+W+' '+H+'" width="100%" xmlns="http://www.w3.org/2000/svg">' +
+      svgEl.innerHTML = '<svg viewBox="0 0 '+W+' '+H+'" width="100%" xmlns="http://www.w3.org/2000/svg">' +
     '<defs><linearGradient id="areaG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+typeColor+'" stop-opacity="0.3"/><stop offset="100%" stop-color="'+typeColor+'" stop-opacity="0.02"/></linearGradient></defs>' +
     yLabels +
     '<line x1="'+padL+'" y1="'+(padT+ch)+'" x2="'+(W-padR)+'" y2="'+(padT+ch)+'" stroke="#334155" stroke-width="1"/>' +
     '<path d="'+area+'" fill="url(#areaG)"/>' +
     '<path d="'+line+'" fill="none" stroke="'+typeColor+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
-    dots + costSvg + xLabels + '</svg>';
+    dots + xLabels + '</svg>';
 }
 
 /* ===== HISTORY ===== */
