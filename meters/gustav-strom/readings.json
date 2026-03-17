@@ -2,11 +2,48 @@
   "meter_id": "1DZG0061092460",
   "readings": [
     {
-      "timestamp": "2025-08-08T12:00:00+02:00",
-      "value": 6853,
+      "timestamp": "2023-11-29T12:00:00+01:00",
+      "value": 0,
+      "source": "Einbau, Rechnung SWE Strom-GAS 2024",
       "consumption": null,
       "days_since_last": null,
       "daily_avg": null,
+      "suspicious": false
+    },
+    {
+      "timestamp": "2023-12-31T12:00:00+01:00",
+      "value": 391,
+      "source": "Rechnung SWE Strom-GAS 2024 (Schätzung)",
+      "consumption": 391,
+      "days_since_last": 32,
+      "daily_avg": 12.219,
+      "suspicious": false
+    },
+    {
+      "timestamp": "2024-08-16T12:00:00+01:00",
+      "value": 3110,
+      "source": "Rechrung SWE Strom-GAS 2024 (Messung)",
+      "consumption": 2719,
+      "days_since_last": 229,
+      "daily_avg": 11.873,
+      "suspicious": false
+    },
+    {
+      "timestamp": "2024-12-31T12:00:00+01:00",
+      "value": 4546,
+      "source": "Rechrung SWE Strom-GAS 2025 (Schätzung)",
+      "consumption": 1436,
+      "days_since_last": 137,
+      "daily_avg": 10.482,
+      "suspicious": false
+    },
+    {
+      "timestamp": "2025-08-08T12:00:00+01:00",
+      "value": 6853,
+      "source": "Rechrung SWE Strom-GAS 2025 (Messung)",
+      "consumption": 2307,
+      "days_since_last": 220,
+      "daily_avg": 10.486,
       "suspicious": false
     }
   ]
