@@ -73,14 +73,6 @@
       "daily_avg": 8.577,
       "suspicious": false,
       "source": "App-Eingabe User"
-    },
-    {
-      "timestamp": "2026-03-17T01:22:55.843Z",
-      "value": 8123,
-      "consumption": 3.97,
-      "days_since_last": 0.37,
-      "daily_avg": 10.768,
-      "suspicious": false
     }
   ]
 }
