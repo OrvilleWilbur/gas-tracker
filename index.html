@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>ZÃ¤hler-Tracker</title>
+<title>Zähler-Tracker</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#0f172a;--card:#1e293b;--accent:#3b82f6;--accent2:#10b981;--warn:#f59e0b;--err:#ef4444;--text:#f1f5f9;--muted:#94a3b8;--input-bg:#334155;--gas:#f59e0b;--strom:#3b82f6;--wasser:#06b6d4}
@@ -88,8 +88,8 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
 
 <!-- PIN Screen -->
 <div id="pin-screen" class="screen active">
-  <div class="icon">ð </div>
-  <h1>ZÃ¤hler-Tracker</h1>
+  <div class="icon">🏠</div>
+  <h1>Zähler-Tracker</h1>
   <h2>PIN eingeben</h2>
   <div class="pin-dots" id="pin-dots">
     <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
@@ -99,7 +99,7 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
 
 <!-- Meter Selection -->
 <div id="meter-screen" class="screen">
-  <h1>ZÃ¤hler wÃ¤hlen</h1>
+  <h1>Zähler wählen</h1>
   <div class="meter-list" id="meter-list"></div>
 </div>
 
@@ -110,10 +110,10 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
     <span class="mh-name" id="input-mh-name"></span>
     <button class="mh-btn" onclick="goToMeterSelect()">Wechseln</button>
   </div>
-  <h1>ZÃ¤hlerstand eingeben</h1>
+  <h1>Zählerstand eingeben</h1>
   <div class="reading-display">
     <div class="reading-value" id="reading-value"><span class="cursor">|</span></div>
-    <div class="reading-unit" id="reading-unit-display">mÂ³</div>
+    <div class="reading-unit" id="reading-unit-display">m³</div>
     <div class="reading-last" id="last-reading-info"></div>
   </div>
   <div class="numpad" id="input-pad"></div>
@@ -123,11 +123,11 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
 
 <!-- Review -->
 <div id="review-screen" class="screen">
-  <div class="icon">â ï¸</div>
+  <div class="icon">⚠️</div>
   <h1>Bitte kontrollieren</h1>
   <div class="reading-display">
     <div class="review-value" id="review-value"></div>
-    <div class="reading-unit" id="review-unit">mÂ³</div>
+    <div class="reading-unit" id="review-unit">m³</div>
   </div>
   <div class="review-hint" id="review-hint"></div>
   <div class="modal-buttons">
@@ -144,15 +144,15 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
 
 <!-- Stats -->
 <div id="stats-screen" class="screen">
-  <div class="icon">â</div>
-  <h1>Danke fÃ¼r die Ablesung!</h1>
+  <div class="icon">✅</div>
+  <h1>Danke für die Ablesung!</h1>
   <div class="stats" id="stats-container"></div>
   <div class="chart-container" id="chart-container" style="display:none">
     <h2 id="chart-title" style="margin-bottom:12px;text-align:left">Tagesverbrauch</h2>
     <div id="chart-svg"></div>
   </div>
   <button class="btn btn-primary" id="btn-new-reading">Neue Ablesung</button>
-  <button class="btn btn-ghost" onclick="goToMeterSelect()">Anderer ZÃ¤hler</button>
+  <button class="btn btn-ghost" onclick="goToMeterSelect()">Anderer Zähler</button>
 </div>
 
 <!-- History -->
@@ -163,40 +163,40 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
   </div>
   <h1>Ablesungen</h1>
   <div class="stats" id="history-list"></div>
-  <button class="btn btn-ghost" id="btn-back-input">â ZurÃ¼ck</button>
+  <button class="btn btn-ghost" id="btn-back-input">← Zurück</button>
 </div>
 
 <!-- Delete -->
 <div id="delete-screen" class="screen">
-  <div class="icon">ðï¸</div>
-  <h1>Ablesung lÃ¶schen?</h1>
+  <div class="icon">🗑️</div>
+  <h1>Ablesung löschen?</h1>
   <div class="reading-display" id="delete-info"></div>
   <div class="modal-buttons">
-    <button class="btn btn-err" id="btn-delete-confirm">EndgÃ¼ltig lÃ¶schen</button>
+    <button class="btn btn-err" id="btn-delete-confirm">Endgültig löschen</button>
     <button class="btn btn-ghost" id="btn-delete-cancel">Abbrechen</button>
   </div>
 </div>
 
 <div id="delete-done-screen" class="screen">
-  <div class="icon">â</div>
-  <h1>GelÃ¶scht</h1>
+  <div class="icon">✅</div>
+  <h1>Gelöscht</h1>
   <p style="color:var(--muted)">Eintrag entfernt.</p>
 </div>
 
 <!-- Settings -->
 <div id="settings-screen" class="screen">
-  <div class="icon">âï¸</div>
+  <div class="icon">⚙️</div>
   <h1 id="settings-title">Einstellungen</h1>
   <h2>Neue Preiswerte eintragen</h2>
   <div id="settings-form" style="width:100%;display:flex;flex-direction:column;gap:16px"></div>
   <button class="btn btn-success" id="btn-save-settings">Speichern</button>
   <h2 style="margin-top:12px">Preishistorie</h2>
   <div class="stats" id="price-history-list"></div>
-  <button class="btn btn-ghost" id="btn-back-from-settings">â ZurÃ¼ck</button>
+  <button class="btn btn-ghost" id="btn-back-from-settings">← Zurück</button>
 </div>
 
 <div id="settings-done-screen" class="screen">
-  <div class="icon">â</div>
+  <div class="icon">✅</div>
   <h1>Gespeichert!</h1>
   <p style="color:var(--muted)">Neue Preiswerte werden ab dem angegebenen Datum verwendet.</p>
   <button class="btn btn-primary" id="btn-settings-done-back">OK</button>
@@ -204,7 +204,7 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
 
 <!-- Error -->
 <div id="error-screen" class="screen">
-  <div class="icon">â ï¸</div>
+  <div class="icon">⚠️</div>
   <h1>Fehler</h1>
   <div class="status-msg status-error" id="error-msg"></div>
   <button class="btn btn-primary" id="btn-retry">Nochmal versuchen</button>
@@ -466,7 +466,7 @@ function selectMeter(id) {
 function selectMeterById(id, callback) {
   selectedMeter = null;
   for (var i = 0; i < METERS.length; i++) { if (METERS[i].id === id) { selectedMeter = METERS[i]; break; } }
-  if (!selectedMeter) { showError('ZÃ¤hler "' + id + '" nicht gefunden.'); return; }
+  if (!selectedMeter) { showError('Zähler "' + id + '" nicht gefunden.'); return; }
   showScreen('loading-screen');
   document.getElementById('loading-text').textContent = 'Lade ' + selectedMeter.name + '...';
   loadData().then(callback).catch(function(e) { showError(e.message); });
