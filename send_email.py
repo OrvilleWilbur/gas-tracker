@@ -253,14 +253,25 @@ def build_email_html(readings, cfg, info, meter_id):
         settings_link = f'<div style="text-align:center;margin-top:16px;"><a href="{app_url}#{setup_frag}meter={meter_id}&settings=1" style="color:{accent};font-size:13px;">⚙️ Preiseinstellungen ändern</a></div>'
 
     # Table: last 20 readings
+    day_unit = 'kWh/d' if mtype in ('gas', 'strom') else 'l/d'
     recent = readings[-20:]
     rows = ""
     for r in reversed(recent):
         t = parse_iso(r["timestamp"])
         c = r.get("consumption")
-        c_str = f'+{fv(c, dec)}' if c is not None else "—"
-        avg_str = fv(r["daily_avg"], max(1, dec)) if r.get("daily_avg") is not None else "—"
-        k = f'{cons_to_cost(c, cfg, r["timestamp"], mtype):.2f} €' if c is not None and hp else "—"
+        c_str = f'+{c:.1f}' if c is not None and unit == 'm³' else (f'+{fv(c, dec)}' if c is not None else "—")
+        if r.get("daily_avg") is not None:
+            if mtype == 'gas':
+                _p = get_price_for_date(cfg, r["timestamp"])
+                _dv = r["daily_avg"] * _p.get("brennwert", 1) * _p.get("zustandszahl", 1)
+                avg_str = f'{_dv:.1f}'
+            elif mtype == 'wasser':
+                avg_str = f'{r["daily_avg"] * 1000:.0f}'
+            else:
+                avg_str = f'{r["daily_avg"]:.1f}'
+        else:
+            avg_str = "—"
+        k = f'{cons_to_cost(r["daily_avg"], cfg, r["timestamp"], mtype):.2f}' if r.get("daily_avg") is not None and hp else "—"
         is_sus = r.get("suspicious", False)
         flag = ' ⚠️' if is_sus else ''
         row_bg = 'background:#fef3c7;' if is_sus else ''
@@ -327,8 +338,8 @@ def build_email_html(readings, cfg, info, meter_id):
       <th style="padding:6px 8px;text-align:left;font-weight:600;color:#64748b;">Datum</th>
       <th style="padding:6px 8px;text-align:right;font-weight:600;color:#64748b;">Stand</th>
       <th style="padding:6px 8px;text-align:right;font-weight:600;color:#64748b;">{unit}</th>
-      <th style="padding:6px 8px;text-align:right;font-weight:600;color:#64748b;">Ø/d</th>
-      <th style="padding:6px 8px;text-align:right;font-weight:600;color:#64748b;">Kosten</th>
+      <th style="padding:6px 8px;text-align:right;font-weight:600;color:#64748b;">{day_unit}</th>
+      <th style="padding:6px 8px;text-align:right;font-weight:600;color:#64748b;">€/d</th>
       <th style="padding:6px 4px;text-align:center;font-weight:600;color:#64748b;width:28px;"></th>
     </tr>
     {rows}
