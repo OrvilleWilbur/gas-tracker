@@ -615,6 +615,7 @@ function saveReading(value, suspicious) {
 
 /* ===== DELETE READING ===== */
 function deleteReading(ts) {
+  if(!confirm('Ablesung wirklich l\u00f6schen?'))return;
   showScreen('loading-screen');
   document.getElementById('loading-text').textContent = 'Wird gel\u00F6scht...';
   fetchFile(readingsPath()).then(function(rd) {
@@ -712,7 +713,7 @@ function buildChart() {
   var isKwh = selectedMeter.type === 'gas' || selectedMeter.type === 'strom';
   titleEl.textContent = isKwh ? 'Tagesverbrauch kWh/d' : 'Tagesverbrauch l/d';
 
-  var W = 380, H = 180, padT = 20, padR = 15, padB = 36, padL = 42;
+  var W = 380, H = 180, padT = 20, padR = 45, padB = 36, padL = 42;
   var cw = W - padL - padR, ch = H - padT - padB;
   var pts = dp.map(function(r) {
     var val;
@@ -754,7 +755,7 @@ function buildChart() {
     dots += '<text x="'+cx.toFixed(1)+'" y="'+(cy-8).toFixed(1)+'" text-anchor="middle" fill="#f1f5f9" font-size="9" font-weight="600">'+p.val.toFixed(1)+(p.cday?' ('+p.cday.toFixed(2)+'\u20AC)':'')+'</text>';;
   });
 
-      svgEl.innerHTML = '<svg viewBox="0 0 '+W+' '+H+'" width="100%" xmlns="http://www.w3.org/2000/svg">' +
+      svgEl.innerHTML = '<svg style="overflow:visible" viewBox="0 0 '+W+' '+H+'" width="100%" xmlns="http://www.w3.org/2000/svg">' +
     '<defs><linearGradient id="areaG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+typeColor+'" stop-opacity="0.3"/><stop offset="100%" stop-color="'+typeColor+'" stop-opacity="0.02"/></linearGradient></defs>' +
     yLabels +
     '<line x1="'+padL+'" y1="'+(padT+ch)+'" x2="'+(W-padR)+'" y2="'+(padT+ch)+'" stroke="#334155" stroke-width="1"/>' +
