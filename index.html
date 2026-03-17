@@ -751,7 +751,7 @@ function buildChart() {
   pts.forEach(function(p) {
     var cx = x(p.date), cy = y(p.val);
     dots += '<circle cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="3.5" fill="'+typeColor+'" stroke="#0f172a" stroke-width="1.5"/>';
-    dots += '<text x="'+cx.toFixed(1)+'" y="'+(cy-8).toFixed(1)+'" text-anchor="middle" fill="#f1f5f9" font-size="9" font-weight="600">'+p.val.toFixed(1)+'</text>'+(p.cday?'<text x="'+x(p.date).toFixed(1)+'" y="'+(y(p.val)+2).toFixed(1)+'" text-anchor="middle" fill="#10b981" font-size="7">'+p.cday.toFixed(2)+'\u20AC</text>':'');
+    dots += '<text x="'+cx.toFixed(1)+'" y="'+(cy-8).toFixed(1)+'" text-anchor="middle" fill="#f1f5f9" font-size="9" font-weight="600">'+p.val.toFixed(1)+(p.cday?' ('+p.cday.toFixed(2)+'\u20AC)':'')+'</text>';;
   });
 
       svgEl.innerHTML = '<svg viewBox="0 0 '+W+' '+H+'" width="100%" xmlns="http://www.w3.org/2000/svg">' +
