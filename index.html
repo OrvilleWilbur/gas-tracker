@@ -495,14 +495,9 @@ function commitFile(path, content, sha, msg) {
     committer: {name: 'Utility Tracker', email: 'utility-tracker@bot.local'}
   };
   if (sha) body.sha = sha;
-  return fetch('https://api.github.com/repos/' + GITHUB_REPO + '/contents/' + path, {
-    method: 'PUT',
-    headers: {'Authorization': 'Bearer ' + GITHUB_TOKEN, 'Content-Type': 'application/json'},
-    body: JSON.stringify(body)
-  }).then(function(r) {
-    if (!r.ok) return r.json().then(function(e) { throw new Error(e.message || 'Commit failed: ' + r.status); });
-    return r.json();
-  });
+  var _url='https://api.github.com/repos/'+GITHUB_REPO+'/contents/'+path,_opts={method:'PUT',headers:{'Authorization':'Bearer '+GITHUB_TOKEN,'Content-Type':'application/json'},body:JSON.stringify(body)};
+  function _attempt(n){return fetch(_url,_opts).then(function(r){if(r.status>=500&&n<2)return new Promise(function(ok){setTimeout(ok,1000*(n+1))}).then(function(){return _attempt(n+1)});if(!r.ok)return r.json().then(function(e){throw new Error(e.message||'Commit failed: '+r.status)});return r.json()}).catch(function(e){if(n<2&&e.name==='TypeError')return new Promise(function(ok){setTimeout(ok,1000*(n+1))}).then(function(){return _attempt(n+1)});throw e})}
+  return _attempt(0);
 }
 
 /* ===== DATA LOADING ===== */
@@ -584,6 +579,7 @@ function checkPlausibility(val) {
 
 /* ===== SAVE READING ===== */
 function saveReading(value, suspicious) {
+  if(window._saving)return;window._saving=true;
   showScreen('loading-screen');
   document.getElementById('loading-text').textContent = 'Wird gespeichert...';
   fetchFile(readingsPath()).then(function(rd) {
@@ -608,9 +604,9 @@ function saveReading(value, suspicious) {
     if (suspicious) msg += ' \u26A0\uFE0F';
     return commitFile(readingsPath(), {meter_id: meterConfig.meter_id || selectedMeter.meter_nr, readings: readings}, currentSha, msg).then(function() {
       setCachedReading(selectedMeter.id, value.toFixed(dec), dateStr, selectedMeter.unit);
-      showStats(nr);
+      window._saving=false;showStats(nr);
     });
-  }).catch(function(e) { showError(e.message); });
+  }).catch(function(e) { window._saving=false;showError(e.message); });
 }
 
 /* ===== DELETE READING ===== */
