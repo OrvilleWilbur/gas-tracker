@@ -2,11 +2,39 @@
   "meter_id": "8DME7681184933/001",
   "readings": [
     {
-      "timestamp": "2025-12-31T12:00:00+01:00",
-      "value": 16.633,
+      "timestamp": "2024-03-13T12:00:00+01:00",
+      "value": 0.2,
+      "source": "Einbau, KRU_Zaehlerwechsel_2024.pdf",
       "consumption": null,
       "days_since_last": null,
       "daily_avg": null,
+      "suspicious": false
+    },
+    {
+      "timestamp": "2024-08-02T12:00:00+01:00",
+      "value": 4.169,
+      "source": "Rechnung KRU Wasser 2024 (Kundenablesung)",
+      "consumption": 3.969,
+      "days_since_last": 142,
+      "daily_avg": 0.028,
+      "suspicious": false
+    },
+    {
+      "timestamp": "2025-07-04T12:00:00+01:00",
+      "value": 13.495,
+      "source": "Rechnung KRU Wasser 2025 (masch. Schätzung)",
+      "consumption": 9.326,
+      "days_since_last": 336,
+      "daily_avg": 0.028,
+      "suspicious": false
+    },
+    {
+      "timestamp": "2025-12-31T12:00:00+01:00",
+      "value": 16.633,
+      "source": "Rechnung KRU Wasser 2025b (Netzbetreiber)",
+      "consumption": 3.138,
+      "days_since_last": 180,
+      "daily_avg": 0.017,
       "suspicious": false
     }
   ]
