@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Zähler-Tracker</title>
+<title>ZÃ¤hler-Tracker</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#0f172a;--card:#1e293b;--accent:#3b82f6;--accent2:#10b981;--warn:#f59e0b;--err:#ef4444;--text:#f1f5f9;--muted:#94a3b8;--input-bg:#334155;--gas:#f59e0b;--strom:#3b82f6;--wasser:#06b6d4}
@@ -88,8 +88,8 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
 
 <!-- PIN Screen -->
 <div id="pin-screen" class="screen active">
-  <div class="icon">🏠</div>
-  <h1>Zähler-Tracker</h1>
+  <div class="icon">ð </div>
+  <h1>ZÃ¤hler-Tracker</h1>
   <h2>PIN eingeben</h2>
   <div class="pin-dots" id="pin-dots">
     <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
@@ -99,7 +99,7 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
 
 <!-- Meter Selection -->
 <div id="meter-screen" class="screen">
-  <h1>Zähler wählen</h1>
+  <h1>ZÃ¤hler wÃ¤hlen</h1>
   <div class="meter-list" id="meter-list"></div>
 </div>
 
@@ -110,10 +110,10 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
     <span class="mh-name" id="input-mh-name"></span>
     <button class="mh-btn" onclick="goToMeterSelect()">Wechseln</button>
   </div>
-  <h1>Zählerstand eingeben</h1>
+  <h1>ZÃ¤hlerstand eingeben</h1>
   <div class="reading-display">
     <div class="reading-value" id="reading-value"><span class="cursor">|</span></div>
-    <div class="reading-unit" id="reading-unit-display">m³</div>
+    <div class="reading-unit" id="reading-unit-display">mÂ³</div>
     <div class="reading-last" id="last-reading-info"></div>
   </div>
   <div class="numpad" id="input-pad"></div>
@@ -123,11 +123,11 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
 
 <!-- Review -->
 <div id="review-screen" class="screen">
-  <div class="icon">⚠️</div>
+  <div class="icon">â ï¸</div>
   <h1>Bitte kontrollieren</h1>
   <div class="reading-display">
     <div class="review-value" id="review-value"></div>
-    <div class="reading-unit" id="review-unit">m³</div>
+    <div class="reading-unit" id="review-unit">mÂ³</div>
   </div>
   <div class="review-hint" id="review-hint"></div>
   <div class="modal-buttons">
@@ -144,15 +144,15 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
 
 <!-- Stats -->
 <div id="stats-screen" class="screen">
-  <div class="icon">✅</div>
-  <h1>Danke für die Ablesung!</h1>
+  <div class="icon">â</div>
+  <h1>Danke fÃ¼r die Ablesung!</h1>
   <div class="stats" id="stats-container"></div>
   <div class="chart-container" id="chart-container" style="display:none">
     <h2 id="chart-title" style="margin-bottom:12px;text-align:left">Tagesverbrauch</h2>
     <div id="chart-svg"></div>
   </div>
   <button class="btn btn-primary" id="btn-new-reading">Neue Ablesung</button>
-  <button class="btn btn-ghost" onclick="goToMeterSelect()">Anderer Zähler</button>
+  <button class="btn btn-ghost" onclick="goToMeterSelect()">Anderer ZÃ¤hler</button>
 </div>
 
 <!-- History -->
@@ -163,40 +163,40 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
   </div>
   <h1>Ablesungen</h1>
   <div class="stats" id="history-list"></div>
-  <button class="btn btn-ghost" id="btn-back-input">← Zurück</button>
+  <button class="btn btn-ghost" id="btn-back-input">â ZurÃ¼ck</button>
 </div>
 
 <!-- Delete -->
 <div id="delete-screen" class="screen">
-  <div class="icon">🗑️</div>
-  <h1>Ablesung löschen?</h1>
+  <div class="icon">ðï¸</div>
+  <h1>Ablesung lÃ¶schen?</h1>
   <div class="reading-display" id="delete-info"></div>
   <div class="modal-buttons">
-    <button class="btn btn-err" id="btn-delete-confirm">Endgültig löschen</button>
+    <button class="btn btn-err" id="btn-delete-confirm">EndgÃ¼ltig lÃ¶schen</button>
     <button class="btn btn-ghost" id="btn-delete-cancel">Abbrechen</button>
   </div>
 </div>
 
 <div id="delete-done-screen" class="screen">
-  <div class="icon">✅</div>
-  <h1>Gelöscht</h1>
+  <div class="icon">â</div>
+  <h1>GelÃ¶scht</h1>
   <p style="color:var(--muted)">Eintrag entfernt.</p>
 </div>
 
 <!-- Settings -->
 <div id="settings-screen" class="screen">
-  <div class="icon">⚙️</div>
+  <div class="icon">âï¸</div>
   <h1 id="settings-title">Einstellungen</h1>
   <h2>Neue Preiswerte eintragen</h2>
   <div id="settings-form" style="width:100%;display:flex;flex-direction:column;gap:16px"></div>
   <button class="btn btn-success" id="btn-save-settings">Speichern</button>
   <h2 style="margin-top:12px">Preishistorie</h2>
   <div class="stats" id="price-history-list"></div>
-  <button class="btn btn-ghost" id="btn-back-from-settings">← Zurück</button>
+  <button class="btn btn-ghost" id="btn-back-from-settings">â ZurÃ¼ck</button>
 </div>
 
 <div id="settings-done-screen" class="screen">
-  <div class="icon">✅</div>
+  <div class="icon">â</div>
   <h1>Gespeichert!</h1>
   <p style="color:var(--muted)">Neue Preiswerte werden ab dem angegebenen Datum verwendet.</p>
   <button class="btn btn-primary" id="btn-settings-done-back">OK</button>
@@ -204,7 +204,7 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
 
 <!-- Error -->
 <div id="error-screen" class="screen">
-  <div class="icon">⚠️</div>
+  <div class="icon">â ï¸</div>
   <h1>Fehler</h1>
   <div class="status-msg status-error" id="error-msg"></div>
   <button class="btn btn-primary" id="btn-retry">Nochmal versuchen</button>
@@ -466,7 +466,7 @@ function selectMeter(id) {
 function selectMeterById(id, callback) {
   selectedMeter = null;
   for (var i = 0; i < METERS.length; i++) { if (METERS[i].id === id) { selectedMeter = METERS[i]; break; } }
-  if (!selectedMeter) { showError('Zähler "' + id + '" nicht gefunden.'); return; }
+  if (!selectedMeter) { showError('ZÃ¤hler "' + id + '" nicht gefunden.'); return; }
   showScreen('loading-screen');
   document.getElementById('loading-text').textContent = 'Lade ' + selectedMeter.name + '...';
   loadData().then(callback).catch(function(e) { showError(e.message); });
@@ -641,7 +641,7 @@ function deleteReading(ts) {
 function showStats(nr) {
   showScreen('stats-screen');
   var c = document.getElementById('stats-container');
-  var unit = selectedMeter.unit, dec = maxDecimals();
+  var unit = selectedMeter.type === 'wasser' ? 'l' : selectedMeter.unit, dec = maxDecimals();
   var kwh = consToKwh(nr.consumption, nr.timestamp);
   var cost = consToCost(nr.consumption, nr.timestamp);
   var costDay = nr.days_since_last > 0 ? cost / nr.days_since_last : 0;
@@ -677,7 +677,7 @@ function showStats(nr) {
   html += '<div class="stat-card" style="flex-direction:column;align-items:stretch;gap:6px">';
   html += '<div style="font-size:13px;color:var(--muted)">Verbrauch gesamt</div>';
   html += '<div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px">';
-  html += '<div><span style="font-size:20px;font-weight:800">' + nr.consumption.toFixed(dec) + '</span> <span style="color:var(--muted)">' + unit + '</span></div>';
+  html += '<div><span style="font-size:20px;font-weight:800">' + (selectedMeter.type==='wasser'?nr.consumption*1000:nr.consumption).toFixed(dec) + '</span> <span style="color:var(--muted)">' + unit + '</span></div>';
   if (selectedMeter.type === 'gas' && kwh) html += '<div><span style="font-size:20px;font-weight:800">' + kwh.toFixed(1) + '</span> <span style="color:var(--muted)">kWh</span></div>';
   if (selectedMeter.type === 'wasser') html += '<div><span style="font-size:20px;font-weight:800">' + (nr.consumption*1000).toFixed(0) + '</span> <span style="color:var(--muted)">Liter</span></div>';
   if (hp && cost > 0) html += '<div><span style="font-size:20px;font-weight:800">' + cost.toFixed(2) + '</span> <span style="color:var(--muted)">\u20AC</span></div>';
@@ -687,7 +687,7 @@ function showStats(nr) {
   html += '<div class="stat-card" style="flex-direction:column;align-items:stretch;gap:6px">';
   html += '<div style="font-size:13px;color:var(--muted)">\u00D8 pro Tag</div>';
   html += '<div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px">';
-  html += '<div><span style="font-size:20px;font-weight:800">' + consDay.toFixed(dec < 1 ? 1 : dec) + '</span> <span style="color:var(--muted)">' + unit + '</span></div>';
+  html += '<div><span style="font-size:20px;font-weight:800">' + (selectedMeter.type==='wasser'?consDay*1000:consDay).toFixed(dec < 1 ? 1 : dec) + '</span> <span style="color:var(--muted)">' + unit + '</span></div>';
   if (selectedMeter.type === 'gas' && kwh) {
     var kwhDay = nr.days_since_last > 0 ? kwh / nr.days_since_last : 0;
     html += '<div><span style="font-size:20px;font-weight:800">' + kwhDay.toFixed(1) + '</span> <span style="color:var(--muted)">kWh</span></div>';
@@ -710,21 +710,25 @@ function buildChart() {
   cc.style.display = 'block';
 
   var isKwh = selectedMeter.type === 'gas' || selectedMeter.type === 'strom';
-  titleEl.textContent = isKwh ? 'Tagesverbrauch kWh/d' : 'Tagesverbrauch m\u00B3/d';
+  titleEl.textContent = isKwh ? 'Tagesverbrauch kWh/d' : 'Tagesverbrauch l/d';
 
-  var W = 380, H = 180, padT = 20, padR = 15, padB = 36, padL = 42;
+  var W = 380, H = 180, padT = 20, padR = 38, padB = 36, padL = 42;
   var cw = W - padL - padR, ch = H - padT - padB;
   var pts = dp.map(function(r) {
     var val;
     if (selectedMeter.type === 'gas') {
       var p = getPriceForDate(r.timestamp);
       val = r.daily_avg * (p.brennwert || 1) * (p.zustandszahl || 1);
-    } else { val = r.daily_avg; }
-    return {date: new Date(r.timestamp), val: val};
+    } else { val = r.daily_avg * (selectedMeter.type === 'wasser' ? 1000 : 1); }
+    return {date: new Date(r.timestamp), val: val, cday: consToCost(r.daily_avg, r.timestamp)};
   });
   var minT = pts[0].date.getTime(), maxT = pts[pts.length-1].date.getTime();
   var maxV = Math.max.apply(null, pts.map(function(p) { return p.val; })) * 1.15;
   if (maxV === 0) maxV = 1;
+    var _hp = hasPrices();
+    var maxC = _hp ? Math.max.apply(null, pts.map(function(p) { return p.cday || 0; })) * 1.15 : 1;
+    if (maxC === 0) maxC = 1;
+    function yC(v) { return padT + ch - (v / maxC) * ch; }
   function x(d) { return padL + (maxT === minT ? cw/2 : ((d.getTime()-minT)/(maxT-minT))*cw); }
   function y(v) { return padT + ch - (v/maxV)*ch; }
 
@@ -754,13 +758,21 @@ function buildChart() {
     dots += '<text x="'+cx.toFixed(1)+'" y="'+(cy-8).toFixed(1)+'" text-anchor="middle" fill="#f1f5f9" font-size="9" font-weight="600">'+p.val.toFixed(1)+'</text>';
   });
 
-  svgEl.innerHTML = '<svg viewBox="0 0 '+W+' '+H+'" width="100%" xmlns="http://www.w3.org/2000/svg">' +
+  var costSvg = '';
+    if (_hp && pts.length > 1) {
+      var cPath = 'M';
+      pts.forEach(function(p,i) { cPath += (i?'L':'') + x(p.date).toFixed(1) + ',' + yC(p.cday||0).toFixed(1); });
+      costSvg = '<path d="' + cPath + '" fill="none" stroke="#10b981" stroke-width="1.5" stroke-dasharray="4,3" stroke-linecap="round"/>';
+      for(var ci=0;ci<=4;ci++){var cv=(maxC/4/1.15)*ci;costSvg+='<text x="'+(W-padR+5)+'" y="'+(yC(cv)+3)+'" fill="#10b981" font-size="9">'+cv.toFixed(2)+'</text>';}
+      costSvg+='<text x="'+(W-2)+'" y="'+(padT-4)+'" text-anchor="end" fill="#10b981" font-size="8">\u20AC/d</text>';
+    }
+    svgEl.innerHTML = '<svg viewBox="0 0 '+W+' '+H+'" width="100%" xmlns="http://www.w3.org/2000/svg">' +
     '<defs><linearGradient id="areaG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+typeColor+'" stop-opacity="0.3"/><stop offset="100%" stop-color="'+typeColor+'" stop-opacity="0.02"/></linearGradient></defs>' +
     yLabels +
     '<line x1="'+padL+'" y1="'+(padT+ch)+'" x2="'+(W-padR)+'" y2="'+(padT+ch)+'" stroke="#334155" stroke-width="1"/>' +
     '<path d="'+area+'" fill="url(#areaG)"/>' +
     '<path d="'+line+'" fill="none" stroke="'+typeColor+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
-    dots + xLabels + '</svg>';
+    dots + costSvg + xLabels + '</svg>';
 }
 
 /* ===== HISTORY ===== */
@@ -780,7 +792,7 @@ function showHistory() {
     if (r.consumption == null) {
       html += '<div class="stat-card"><div><div class="stat-label">'+dt+' '+tm+f+'</div><div style="font-size:13px;color:var(--muted);margin-top:2px">Startwert</div></div><div class="stat-value" style="font-size:18px">'+r.value.toFixed(dec)+'</div></div>';
     } else {
-      var extra = '+' + r.consumption.toFixed(dec) + ' ' + unit;
+      var extra = '+' + (selectedMeter.type==='wasser'?r.consumption*1000:r.consumption).toFixed(dec) + ' ' + unit;
       if (selectedMeter.type === 'gas') {
         var kwh = consToKwh(r.consumption, r.timestamp);
         if (kwh) extra = '+' + kwh.toFixed(1) + ' kWh \u00B7 ' + extra;
