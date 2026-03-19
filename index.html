@@ -82,9 +82,13 @@ h2{font-size:16px;font-weight:600;color:var(--muted)}
 .price-history-item .values{font-size:13px;color:var(--text);margin-top:4px;line-height:1.6}
 .price-history-item .note{font-size:11px;color:var(--muted);margin-top:4px;font-style:italic}
 .price-history-item .computed{font-size:14px;font-weight:700;color:var(--accent2);margin-top:6px}
+#offline-banner{display:none;position:fixed;top:0;left:0;right:0;padding:10px 16px;background:var(--err);color:#fff;font-size:14px;font-weight:600;text-align:center;z-index:9999;animation:slideDown .3s}
+#offline-banner.visible{display:block}
+@keyframes slideDown{from{transform:translateY(-100%)}to{transform:translateY(0)}}
 </style>
 </head>
 <body>
+<div id="offline-banner">⚡ Keine Internetverbindung</div>
 
 <!-- PIN Screen -->
 <div id="pin-screen" class="screen active">
@@ -359,6 +363,18 @@ function checkHashAction() {
   return result;
 }
 
+/* ===== OFFLINE DETECTION (F-06) ===== */
+function updateOfflineBanner() {
+  document.getElementById('offline-banner').classList.toggle('visible', !navigator.onLine);
+}
+function requireOnline() {
+  if (!navigator.onLine) { showError('Keine Internetverbindung. Bitte später erneut versuchen.'); return false; }
+  return true;
+}
+window.addEventListener('online', updateOfflineBanner);
+window.addEventListener('offline', updateOfflineBanner);
+updateOfflineBanner();
+
 /* ===== SCREEN MANAGEMENT ===== */
 function showScreen(id) {
   var screens = document.querySelectorAll('.screen');
@@ -502,6 +518,7 @@ function commitFile(path, content, sha, msg) {
 
 /* ===== DATA LOADING ===== */
 function loadData() {
+  if (!navigator.onLine) return Promise.reject(new Error('Keine Internetverbindung.'));
   return fetchFile(configPath()).then(function(cfg) {
     if (cfg.content) { meterConfig = cfg.content; configSha = cfg.sha; }
     else { meterConfig = getDefaultConfig(); configSha = null; }
@@ -579,7 +596,7 @@ function checkPlausibility(val) {
 
 /* ===== SAVE READING ===== */
 function saveReading(value, suspicious) {
-  if(window._saving)return;window._saving=true;
+  if(window._saving)return;if(!requireOnline())return;window._saving=true;
   showScreen('loading-screen');
   document.getElementById('loading-text').textContent = 'Wird gespeichert...';
   fetchFile(readingsPath()).then(function(rd) {
@@ -611,6 +628,7 @@ function saveReading(value, suspicious) {
 
 /* ===== DELETE READING ===== */
 function deleteReading(ts) {
+  if(!requireOnline())return;
   if(!confirm('Ablesung wirklich l\u00f6schen?'))return;
   showScreen('loading-screen');
   document.getElementById('loading-text').textContent = 'Wird gel\u00F6scht...';
