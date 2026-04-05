@@ -725,17 +725,31 @@ function buildChart() {
   cc.style.display = 'block';
 
   var isKwh = selectedMeter.type === 'gas' || selectedMeter.type === 'strom';
-  titleEl.textContent = isKwh ? 'Tagesverbrauch kWh/d' : 'Tagesverbrauch l/d';
+  titleEl.textContent = isKwh ? 'Tagesverbrauch kWh/d (\u00D8 360d)' : 'Tagesverbrauch l/d (\u00D8 360d)';
 
   var W = 380, H = 180, padT = 20, padR = 45, padB = 36, padL = 42;
   var cw = W - padL - padR, ch = H - padT - padB;
-  var pts = dp.map(function(r) {
+  // Rohwerte berechnen (für Labels)
+  var raw = dp.map(function(r) {
     var val;
     if (selectedMeter.type === 'gas') {
       var p = getPriceForDate(r.timestamp);
       val = r.daily_avg * (p.brennwert || 1) * (p.zustandszahl || 1);
     } else { val = r.daily_avg * (selectedMeter.type === 'wasser' ? 1000 : 1); }
-    return {date: new Date(r.timestamp), val: val, cday: consToCost(r.daily_avg, r.timestamp)};
+    return {date: new Date(r.timestamp), val: val, days: r.days_since_last || 1, cday: consToCost(r.daily_avg, r.timestamp)};
+  });
+  // 360d gleitender Durchschnitt (gewichtet nach Intervalllänge)
+  var WINDOW = 360;
+  var pts = raw.map(function(p, i) {
+    var cutoff = p.date.getTime() - WINDOW * 86400000;
+    var sumVal = 0, sumDays = 0;
+    for (var j = i; j >= 0; j--) {
+      if (raw[j].date.getTime() < cutoff) break;
+      sumVal += raw[j].val * raw[j].days;
+      sumDays += raw[j].days;
+    }
+    var avg = sumDays > 0 ? sumVal / sumDays : p.val;
+    return {date: p.date, val: avg, rawVal: p.val, cday: p.cday};
   });
   var minT = pts[0].date.getTime(), maxT = pts[pts.length-1].date.getTime();
   var maxV = Math.max.apply(null, pts.map(function(p) { return p.val; })) * 1.15;
@@ -766,7 +780,7 @@ function buildChart() {
   pts.forEach(function(p) {
     var cx = x(p.date), cy = y(p.val);
     dots += '<circle cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="3.5" fill="'+typeColor+'" stroke="#0f172a" stroke-width="1.5"/>';
-    dots += '<text x="'+cx.toFixed(1)+'" y="'+(cy-8).toFixed(1)+'" text-anchor="middle" fill="#f1f5f9" font-size="9" font-weight="600">'+p.val.toFixed(1)+(p.cday?' ('+p.cday.toFixed(2)+'\u20AC)':'')+'</text>';;
+    dots += '<text x="'+cx.toFixed(1)+'" y="'+(cy-8).toFixed(1)+'" text-anchor="middle" fill="#f1f5f9" font-size="9" font-weight="600">'+p.val.toFixed(1)+'</text>';
   });
 
       svgEl.innerHTML = '<svg style="overflow:visible" viewBox="0 0 '+W+' '+H+'" width="100%" xmlns="http://www.w3.org/2000/svg">' +
