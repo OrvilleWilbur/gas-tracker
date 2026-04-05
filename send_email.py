@@ -120,18 +120,32 @@ def build_chart_png(readings, cfg, info):
         return None
 
     mtype = info['type']
-    dates, vals = [], []
+    dates, raw_vals, days_list = [], [], []
     for r in dp:
         dates.append(parse_iso(r["timestamp"]))
         if mtype == 'gas':
             p = get_price_for_date(cfg, r["timestamp"])
-            vals.append(r["daily_avg"] * p.get("brennwert", 1) * p.get("zustandszahl", 1))
+            raw_vals.append(r["daily_avg"] * p.get("brennwert", 1) * p.get("zustandszahl", 1))
         else:
-            vals.append(r["daily_avg"])
+            raw_vals.append(r["daily_avg"])
+        days_list.append(r.get("days_since_last") or 1)
+
+    # 360d gewichteter gleitender Durchschnitt (nach Intervalllänge)
+    WINDOW_DAYS = 360
+    vals = []
+    for i in range(len(dates)):
+        cutoff = dates[i] - timedelta(days=WINDOW_DAYS)
+        sum_val, sum_days = 0.0, 0.0
+        for j in range(i, -1, -1):
+            if dates[j] < cutoff:
+                break
+            sum_val += raw_vals[j] * days_list[j]
+            sum_days += days_list[j]
+        vals.append(sum_val / sum_days if sum_days > 0 else raw_vals[i])
 
     color_map = {'gas': '#f59e0b', 'strom': '#3b82f6', 'wasser': '#06b6d4'}
     color = color_map.get(mtype, '#3b82f6')
-    ylabel = 'kWh/Tag' if mtype in ('gas', 'strom') else 'm³/Tag'
+    ylabel = 'kWh/Tag (Ø 360d)' if mtype in ('gas', 'strom') else 'm³/Tag (Ø 360d)'
 
     fig, ax = plt.subplots(figsize=(6.4, 2.8))
     fig.patch.set_facecolor("#0f172a")
@@ -243,7 +257,7 @@ def build_email_html(readings, cfg, info, meter_id):
     if chart_data:
         ylabel = 'kWh/d' if mtype in ('gas', 'strom') else 'm³/d'
         chart_section = f'''
-  <h2 style="font-size:16px;font-weight:700;margin:24px 0 12px;color:#0f172a;">Tagesverbrauch {ylabel}</h2>
+  <h2 style="font-size:16px;font-weight:700;margin:24px 0 12px;color:#0f172a;">Tagesverbrauch {ylabel} (Ø 360d)</h2>
   <div style="text-align:center;"><img src="cid:chart" style="max-width:100%;border-radius:12px;" /></div>
 '''
 
