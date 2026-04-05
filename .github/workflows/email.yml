@@ -23,7 +23,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: pip install matplotlib
+        run: pip install 'matplotlib>=3.8,<4'
 
       - name: Detect changed meter
         id: meter

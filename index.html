@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Zähler-Tracker</title>
@@ -313,6 +313,12 @@ function b64toBytes(b64) {
   return arr;
 }
 
+function bytesToB64(bytes) {
+  var bin = '';
+  for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin);
+}
+
 function deriveKey(pin, salt, iterations) {
   var enc = new TextEncoder();
   return crypto.subtle.importKey('raw', enc.encode(pin), 'PBKDF2', false, ['deriveKey'])
@@ -374,6 +380,13 @@ function requireOnline() {
 window.addEventListener('online', updateOfflineBanner);
 window.addEventListener('offline', updateOfflineBanner);
 updateOfflineBanner();
+
+/* ===== HTML ESCAPING ===== */
+function esc(s) {
+  var d = document.createElement('div');
+  d.appendChild(document.createTextNode(s));
+  return d.innerHTML;
+}
 
 /* ===== SCREEN MANAGEMENT ===== */
 function showScreen(id) {
@@ -461,13 +474,13 @@ function buildMeterSelection() {
   var html = '';
   order.forEach(function(prop) {
     var g = groups[prop];
-    html += '<div class="property-group"><div class="property-header">' + g.icon + ' ' + prop + '</div>';
+    html += '<div class="property-group"><div class="property-header">' + esc(g.icon + ' ' + prop) + '</div>';
     g.meters.forEach(function(m) {
       var c = getCachedReading(m.id);
-      html += '<div class="meter-card" data-type="' + m.type + '" onclick="selectMeter(\'' + m.id + '\')">';
-      html += '<div class="mc-icon">' + m.icon + '</div>';
-      html += '<div class="mc-info"><div class="mc-name">' + m.name + '</div><div class="mc-nr">' + m.meter_nr + '</div></div>';
-      if (c) html += '<div class="mc-last"><div class="mc-last-val">' + c.value + ' ' + c.unit + '</div><div class="mc-last-date">' + c.date + '</div></div>';
+      html += '<div class="meter-card" data-type="' + esc(m.type) + '" onclick="selectMeter(\'' + esc(m.id) + '\')">';
+      html += '<div class="mc-icon">' + esc(m.icon) + '</div>';
+      html += '<div class="mc-info"><div class="mc-name">' + esc(m.name) + '</div><div class="mc-nr">' + esc(m.meter_nr) + '</div></div>';
+      if (c) html += '<div class="mc-last"><div class="mc-last-val">' + esc(c.value + ' ' + c.unit) + '</div><div class="mc-last-date">' + esc(c.date) + '</div></div>';
       html += '</div>';
     });
     html += '</div>';
@@ -507,7 +520,7 @@ function fetchFile(path) {
 function commitFile(path, content, sha, msg) {
   var body = {
     message: msg,
-    content: btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2)))),
+    content: bytesToB64(new TextEncoder().encode(JSON.stringify(content, null, 2))),
     committer: {name: 'Utility Tracker', email: 'utility-tracker@bot.local'}
   };
   if (sha) body.sha = sha;
@@ -519,11 +532,10 @@ function commitFile(path, content, sha, msg) {
 /* ===== DATA LOADING ===== */
 function loadData() {
   if (!navigator.onLine) return Promise.reject(new Error('Keine Internetverbindung.'));
-  return fetchFile(configPath()).then(function(cfg) {
+  return Promise.all([fetchFile(configPath()), fetchFile(readingsPath())]).then(function(results) {
+    var cfg = results[0], rd = results[1];
     if (cfg.content) { meterConfig = cfg.content; configSha = cfg.sha; }
     else { meterConfig = getDefaultConfig(); configSha = null; }
-    return fetchFile(readingsPath());
-  }).then(function(rd) {
     if (rd.content) { readings = rd.content.readings || []; currentSha = rd.sha; }
     else { readings = []; currentSha = null; }
     // Update cache with latest reading
@@ -547,7 +559,7 @@ function setupInputScreen() {
 
 function updateReadingDisplay() {
   var el = document.getElementById('reading-value');
-  el.innerHTML = readingInput === '' ? '<span class="cursor">|</span>' : readingInput + '<span class="cursor">|</span>';
+  el.innerHTML = readingInput === '' ? '<span class="cursor">|</span>' : esc(readingInput) + '<span class="cursor">|</span>';
   document.getElementById('btn-submit').disabled = readingInput === '' || readingInput === ',';
   var last = readings.length > 0 ? readings[readings.length-1] : null;
   var info = document.getElementById('last-reading-info');
@@ -807,14 +819,14 @@ function showHistory() {
     var tm = d.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'});
     var f = r.suspicious ? ' \u26A0\uFE0F' : '';
     if (r.consumption == null) {
-      html += '<div class="stat-card"><div><div class="stat-label">'+dt+' '+tm+f+'</div><div style="font-size:13px;color:var(--muted);margin-top:2px">Startwert</div></div><div class="stat-value" style="font-size:18px">'+r.value.toFixed(dec)+'</div></div>';
+      html += '<div class="stat-card"><div><div class="stat-label">'+esc(dt+' '+tm+f)+'</div><div style="font-size:13px;color:var(--muted);margin-top:2px">Startwert</div></div><div class="stat-value" style="font-size:18px">'+esc(r.value.toFixed(dec))+'</div></div>';
     } else {
       var extra = '+' + (selectedMeter.type==='wasser'?r.consumption*1000:r.consumption).toFixed(dec) + ' ' + unit;
       if (selectedMeter.type === 'gas') {
         var kwh = consToKwh(r.consumption, r.timestamp);
         if (kwh) extra = '+' + kwh.toFixed(1) + ' kWh \u00B7 ' + extra;
       }
-      html += '<div class="stat-card"><div><div class="stat-label">'+dt+' '+tm+f+'</div><div style="font-size:13px;color:var(--muted);margin-top:2px">'+extra+'</div></div><div class="stat-value" style="font-size:18px">'+r.value.toFixed(dec)+'</div></div>';
+      html += '<div class="stat-card"><div><div class="stat-label">'+esc(dt+' '+tm+f)+'</div><div style="font-size:13px;color:var(--muted);margin-top:2px">'+esc(extra)+'</div></div><div class="stat-value" style="font-size:18px">'+esc(r.value.toFixed(dec))+'</div></div>';
     }
   });
   list.innerHTML = html || '<div class="status-msg" style="color:var(--muted)">Noch keine Ablesungen.</div>';
@@ -877,17 +889,17 @@ function renderPriceHistory() {
   if (ph.length === 0) { list.innerHTML = '<div class="status-msg" style="color:var(--muted)">Keine Preishistorie. Bitte Preise eintragen.</div>'; return; }
   var html = '';
   ph.forEach(function(e) {
-    html += '<div class="price-history-item"><div class="date">G\u00FCltig ab ' + e.valid_from + '</div>';
+    html += '<div class="price-history-item"><div class="date">G\u00FCltig ab ' + esc(e.valid_from) + '</div>';
     if (selectedMeter.type === 'gas') {
       var pm3 = (e.gas_price_per_kwh||0) * (e.brennwert||0) * (e.zustandszahl||0);
-      html += '<div class="values">AP: ' + e.gas_price_per_kwh + ' \u20AC/kWh \u00B7 BW: ' + e.brennwert + ' \u00B7 ZZ: ' + e.zustandszahl + '</div>';
-      html += '<div class="computed">\u2192 ' + pm3.toFixed(4) + ' \u20AC/m\u00B3 \u00B7 ' + ((e.brennwert||0)*(e.zustandszahl||0)).toFixed(4) + ' kWh/m\u00B3</div>';
+      html += '<div class="values">AP: ' + esc(String(e.gas_price_per_kwh)) + ' \u20AC/kWh \u00B7 BW: ' + esc(String(e.brennwert)) + ' \u00B7 ZZ: ' + esc(String(e.zustandszahl)) + '</div>';
+      html += '<div class="computed">\u2192 ' + esc(pm3.toFixed(4)) + ' \u20AC/m\u00B3 \u00B7 ' + esc(((e.brennwert||0)*(e.zustandszahl||0)).toFixed(4)) + ' kWh/m\u00B3</div>';
     } else if (selectedMeter.type === 'strom') {
-      html += '<div class="values">AP: ' + e.price_per_kwh + ' \u20AC/kWh</div>';
+      html += '<div class="values">AP: ' + esc(String(e.price_per_kwh)) + ' \u20AC/kWh</div>';
     } else {
-      html += '<div class="values">Preis: ' + e.price_per_m3 + ' \u20AC/m\u00B3</div>';
+      html += '<div class="values">Preis: ' + esc(String(e.price_per_m3)) + ' \u20AC/m\u00B3</div>';
     }
-    if (e.note) html += '<div class="note">' + e.note + '</div>';
+    if (e.note) html += '<div class="note">' + esc(e.note) + '</div>';
     html += '</div>';
   });
   list.innerHTML = html;
@@ -915,7 +927,7 @@ function collectSettingsEntry() {
 
 function handleSaveSettings() {
   var entry = collectSettingsEntry();
-  if (!entry) { alert('Bitte alle Felder ausf\u00FCllen.'); return; }
+  if (!entry) { showError('Bitte alle Felder ausf\u00FCllen.'); return; }
   saveSettings(entry);
 }
 
@@ -995,9 +1007,9 @@ function init() {
           for (var i = 0; i < readings.length; i++) { if (readings[i].timestamp === hashAction.ts) { entry = readings[i]; break; } }
           if (!entry) { showError('Eintrag nicht gefunden.'); return; }
           var d = new Date(entry.timestamp);
-          var info = '<div class="review-value" style="color:var(--err)">' + fmtVal(entry.value) + '</div>';
-          info += '<div class="reading-unit">' + selectedMeter.unit + '</div>';
-          info += '<div class="reading-last">' + d.toLocaleDateString('de-DE') + ' ' + d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+          var info = '<div class="review-value" style="color:var(--err)">' + esc(fmtVal(entry.value)) + '</div>';
+          info += '<div class="reading-unit">' + esc(selectedMeter.unit) + '</div>';
+          info += '<div class="reading-last">' + esc(d.toLocaleDateString('de-DE') + ' ' + d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}));
           if (entry.suspicious) info += ' \u2014 \u26A0\uFE0F verd\u00E4chtig';
           info += '</div>';
           document.getElementById('delete-info').innerHTML = info;
