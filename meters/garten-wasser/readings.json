@@ -22,7 +22,7 @@
     {
       "timestamp": "2025-07-04T12:00:00+01:00",
       "value": 13.495,
-      "source": "Rechnung KRU Wasser 2025 (masch. Schätzung)",
+      "source": "Rechnung KRU Wasser 2025 (masch. SchÃ¤tzung)",
       "consumption": 9.326,
       "days_since_last": 336,
       "daily_avg": 0.028,
@@ -36,6 +36,14 @@
       "days_since_last": 180,
       "daily_avg": 0.017,
       "suspicious": false
+    },
+    {
+      "timestamp": "2026-04-05T14:38:11.047Z",
+      "value": 16.73,
+      "consumption": 0.097,
+      "days_since_last": 95.15,
+      "daily_avg": 0.001,
+      "suspicious": true
     }
   ]
 }
