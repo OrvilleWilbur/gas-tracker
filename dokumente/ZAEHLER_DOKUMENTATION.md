@@ -1,0 +1,52 @@
+# Zähler-Dokumentation
+
+## Garten Strom
+
+**Verbrauchsstelle:** Krummer Weg 40 m
+**Versorger:** SWE Energie GmbH
+**Aktueller Zähler:** 1DZG0061148558 (seit 25.09.2025)
+
+### Zählerwechsel 25.09.2025
+
+| | Zähler-Nr | Stand | Datum |
+|---|-----------|-------|-------|
+| Alter Zähler | 36315107 | 2895 kWh (Endstand) | 25.09.2025 |
+| Neuer Zähler | 1DZG0061148558 | 0 kWh (Anfangsstand) | 25.09.2025 |
+
+- Quelle: SWE-Kundenportal
+
+### Zählerstände
+
+| Datum | Stand (kWh) | Verbrauch (kWh) | Tage | kWh/d | Zähler | Quelle |
+|-------|-------------|-----------------|------|-------|--------|--------|
+| 06.06.2018 | 0 | - | - | - | 36315107 | Einbau, Rechnung SWE 2018 |
+| 05.07.2018 | 41 | 41 | 29 | 1.41 | 36315107 | Rechnung SWE 2018 (Schätzung) |
+| 06.07.2019 | 328 | 287 | 366 | 0.78 | 36315107 | Rechnung SWE 2019 (Kundenablesung) |
+| 26.07.2020 | 748 | 420 | 386 | 1.09 | 36315107 | Rechnung SWE 2020 (Kundenablesung) |
+| 02.07.2022 | 1080 | 332 | 706 | 0.47 | 36315107 | Rechnung SWE 2023, Periodenstart (Schätzung) |
+| 27.06.2023 | 1304 | 224 | 360 | 0.62 | 36315107 | Rechnung SWE 2023 (Kundenablesung) |
+| 02.08.2024 | 1873 | 569 | 402 | 1.42 | 36315107 | Rechnung SWE 2024 (Kundenablesung) |
+| 12.07.2025 | 2817 | 944 | 344 | 2.74 | 36315107 | Rechnung SWE 2025 (Kundenablesung) |
+| 25.09.2025 | 2895 | 78 | 75 | 1.04 | 36315107 | Zählerwechsel Endstand, SWE-Portal |
+| 25.09.2025 | 0 | - | - | - | 1DZG0061148558 | Zählerwechsel Anfangsstand, SWE-Portal |
+
+### Preishistorie
+
+| Gültig ab | Preis (brutto) | Tarif | Quelle |
+|-----------|----------------|-------|--------|
+| 01.09.2018 | 26,23 ct/kWh | Strom.mini | Rechnung 2019 |
+| 01.01.2019 | 27,41 ct/kWh | Strom.mini | Rechnung 2019 |
+| 01.01.2020 | 29,43 ct/kWh | Strom.mini | Rechnung 2020 |
+| 01.07.2022 | 25,00 ct/kWh | Strom.mini SV | Rechnung 2023 |
+| 01.10.2022 | 36,07 ct/kWh | Strom.mini SV | Rechnung 2023 |
+| 01.01.2025 | 34,94 ct/kWh | Strom.fam SV | Rechnung 2025 |
+
+---
+
+### Session 2026-04-06
+
+**Aktion:** Zählerwechsel Garten Strom dokumentiert
+**Daten:** Endstand alt 2895 kWh (36315107), Anfangsstand neu 0 kWh (1DZG0061148558), Datum 25.09.2025
+**Quelle:** SWE-Kundenportal
+**Dateien aktualisiert:** readings.json, config.json, index.html (meter_nr), ZAEHLER_DOKUMENTATION.md (neu erstellt)
+**Plausibilität:** Endstand 2895 - Vorstand 2817 = 78 kWh in 75 Tagen = 1.04 kWh/d (im historischen Rahmen 0.5-2.7 kWh/d)

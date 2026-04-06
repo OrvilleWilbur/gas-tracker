@@ -1,10 +1,18 @@
 {
-  "meter_id": "36315107",
+  "meter_id": "1DZG0061148558",
   "type": "strom",
   "initial_reading": 0,
   "max_daily_consumption": 50,
   "plausibility_factor": 3.0,
   "owner": "SWE Energie GmbH",
+  "previous_meters": [
+    {
+      "meter_id": "36315107",
+      "final_reading": 2895,
+      "swap_date": "2025-09-25",
+      "reason": "Zählerwechsel durch SWE"
+    }
+  ],
   "price_history": [
     {
       "valid_from": "2018-09-01",

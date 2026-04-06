@@ -1,5 +1,5 @@
 {
-  "meter_id": "36315107",
+  "meter_id": "1DZG0061148558",
   "readings": [
     {
       "timestamp": "2018-06-06T12:00:00+01:00",
@@ -71,6 +71,24 @@
       "consumption": 944,
       "days_since_last": 344,
       "daily_avg": 2.744,
+      "suspicious": false
+    },
+    {
+      "timestamp": "2025-09-25T12:00:00+01:00",
+      "value": 2895,
+      "source": "Zählerwechsel Endstand alt (36315107), SWE-Portal",
+      "consumption": 78,
+      "days_since_last": 75,
+      "daily_avg": 1.04,
+      "suspicious": false
+    },
+    {
+      "timestamp": "2025-09-25T12:00:01+01:00",
+      "value": 0,
+      "source": "Zählerwechsel Anfangsstand neu (1DZG0061148558), SWE-Portal",
+      "consumption": null,
+      "days_since_last": null,
+      "daily_avg": null,
       "suspicious": false
     }
   ]
