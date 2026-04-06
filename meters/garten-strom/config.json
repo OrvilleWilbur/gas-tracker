@@ -5,9 +5,14 @@
   "max_daily_consumption": 50,
   "plausibility_factor": 3.0,
   "owner": "SWE Energie GmbH",
+  "meter_type": "Zweirichtungszähler",
+  "meter_model": "DZG DWS7412.2V.G2",
+  "meter_year": 2023,
   "previous_meters": [
     {
       "meter_id": "36315107",
+      "meter_type": "Drehstromzähler",
+      "model": "EMH ED300S",
       "final_reading": 2895,
       "swap_date": "2025-09-25",
       "reason": "Zählerwechsel durch SWE"

@@ -76,7 +76,7 @@
     {
       "timestamp": "2025-09-25T12:00:00+01:00",
       "value": 2895,
-      "source": "Zählerwechsel Endstand alt (36315107), SWE-Portal",
+      "source": "Zählerwechsel Endstand alt (36315107), SWE-Portal + Foto",
       "consumption": 78,
       "days_since_last": 75,
       "daily_avg": 1.04,
@@ -89,6 +89,15 @@
       "consumption": null,
       "days_since_last": null,
       "daily_avg": null,
+      "suspicious": false
+    },
+    {
+      "timestamp": "2026-04-05T12:00:00+01:00",
+      "value": 208,
+      "source": "Ablesung vor Ort, Foto",
+      "consumption": 208,
+      "days_since_last": 192,
+      "daily_avg": 1.083,
       "suspicious": false
     }
   ]

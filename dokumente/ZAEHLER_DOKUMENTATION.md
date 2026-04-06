@@ -8,12 +8,14 @@
 
 ### Zählerwechsel 25.09.2025
 
-| | Zähler-Nr | Stand | Datum |
-|---|-----------|-------|-------|
-| Alter Zähler | 36315107 | 2895 kWh (Endstand) | 25.09.2025 |
-| Neuer Zähler | 1DZG0061148558 | 0 kWh (Anfangsstand) | 25.09.2025 |
+| | Zähler-Nr | Modell | Stand | Datum |
+|---|-----------|--------|-------|-------|
+| Alter Zähler | 36315107 | EMH Drehstromzähler ED300S | 2895 kWh (Endstand) | 25.09.2025 |
+| Neuer Zähler | 1DZG0061148558 | DZG Zweirichtungszähler DWS7412.2V.G2 (Bj. 2023) | 0 kWh (Anfangsstand) | 25.09.2025 |
 
-- Quelle: SWE-Kundenportal
+- Netzbetreiber: SWE Erfurt Netz
+- Hinweis: Zweirichtungszähler, aber keine PV-Anlage vorhanden -- SWE-Standardverbau
+- Quelle: SWE-Kundenportal + Foto-Dokumentation
 
 ### Zählerstände
 
@@ -29,6 +31,7 @@
 | 12.07.2025 | 2817 | 944 | 344 | 2.74 | 36315107 | Rechnung SWE 2025 (Kundenablesung) |
 | 25.09.2025 | 2895 | 78 | 75 | 1.04 | 36315107 | Zählerwechsel Endstand, SWE-Portal |
 | 25.09.2025 | 0 | - | - | - | 1DZG0061148558 | Zählerwechsel Anfangsstand, SWE-Portal |
+| 05.04.2026 | 208 | 208 | 192 | 1.08 | 1DZG0061148558 | Ablesung vor Ort, Foto |
 
 ### Preishistorie
 
@@ -45,8 +48,13 @@
 
 ### Session 2026-04-06
 
-**Aktion:** Zählerwechsel Garten Strom dokumentiert
-**Daten:** Endstand alt 2895 kWh (36315107), Anfangsstand neu 0 kWh (1DZG0061148558), Datum 25.09.2025
-**Quelle:** SWE-Kundenportal
-**Dateien aktualisiert:** readings.json, config.json, index.html (meter_nr), ZAEHLER_DOKUMENTATION.md (neu erstellt)
-**Plausibilität:** Endstand 2895 - Vorstand 2817 = 78 kWh in 75 Tagen = 1.04 kWh/d (im historischen Rahmen 0.5-2.7 kWh/d)
+**Aktion:** Zählerwechsel Garten Strom dokumentiert + aktuelle Ablesung
+**Daten:**
+- Endstand alt: 2895 kWh (36315107, EMH ED300S), Datum 25.09.2025
+- Anfangsstand neu: 0 kWh (1DZG0061148558, DZG DWS7412.2V.G2, Bj. 2023)
+- Aktuelle Ablesung: 208 kWh am 05.04.2026
+**Quelle:** SWE-Kundenportal + Foto-Ablesung vor Ort
+**Dateien aktualisiert:** readings.json, config.json (meter_type/model ergänzt), index.html (meter_nr), ZAEHLER_DOKUMENTATION.md
+**Plausibilität:**
+- Endstand 2895 - Vorstand 2817 = 78 kWh in 75 Tagen = 1.04 kWh/d (im Rahmen)
+- Neue Ablesung 208 kWh in 192 Tagen = 1.08 kWh/d (im historischen Rahmen 0.5-2.7 kWh/d)
