@@ -4,6 +4,7 @@
     {
       "timestamp": "2023-07-05T12:00:00+02:00",
       "value": 0,
+      "source": "Zählerwechsel",
       "consumption": null,
       "days_since_last": null,
       "daily_avg": null,
@@ -12,6 +13,7 @@
     {
       "timestamp": "2023-10-05T11:08:00+02:00",
       "value": 186,
+      "source": "Rechnung SWSZ Gas 2024, Periodenstart",
       "consumption": 186,
       "days_since_last": 92,
       "daily_avg": 2.022,
@@ -20,6 +22,7 @@
     {
       "timestamp": "2023-12-19T12:00:00+01:00",
       "value": 940,
+      "source": "Rechnung SWSZ Gas 2024, Zwischenablesung",
       "consumption": 754,
       "days_since_last": 75,
       "daily_avg": 10.053,
@@ -28,6 +31,7 @@
     {
       "timestamp": "2024-09-27T12:00:00+02:00",
       "value": 2890,
+      "source": "Eigenablesung User (korrigiert Rechnungswert 1.950 vom 04.10.2024)",
       "consumption": 1950,
       "days_since_last": 283,
       "daily_avg": 6.89,
@@ -36,6 +40,7 @@
     {
       "timestamp": "2024-11-25T12:00:00+01:00",
       "value": 3386,
+      "source": "Rechnung SWSZ Gas 2025, Zwischenablesung",
       "consumption": 496,
       "days_since_last": 59,
       "daily_avg": 8.407,
@@ -44,6 +49,7 @@
     {
       "timestamp": "2025-09-22T12:00:00+02:00",
       "value": 5920,
+      "source": "Rechnung SWSZ Gas 2025, Endstand",
       "consumption": 2534,
       "days_since_last": 301,
       "daily_avg": 8.419,
@@ -52,6 +58,7 @@
     {
       "timestamp": "2025-12-07T12:00:00+01:00",
       "value": 6817,
+      "source": "Eigenablesung User",
       "consumption": 897,
       "days_since_last": 76,
       "daily_avg": 11.803,
@@ -60,6 +67,7 @@
     {
       "timestamp": "2026-03-08T16:17:49.721Z",
       "value": 8050.333,
+      "source": "Eigenablesung User",
       "consumption": 1233.333,
       "days_since_last": 91.22,
       "daily_avg": 13.52,
@@ -68,15 +76,16 @@
     {
       "timestamp": "2026-03-16T16:32:00.597Z",
       "value": 8119.03,
+      "source": "App-Eingabe User",
       "consumption": 68.697,
       "days_since_last": 8.01,
       "daily_avg": 8.577,
-      "suspicious": false,
-      "source": "App-Eingabe User"
+      "suspicious": false
     },
     {
       "timestamp": "2026-03-26T16:22:10.270Z",
       "value": 8135.1,
+      "source": "App-Eingabe User",
       "consumption": 16.07,
       "days_since_last": 9.99,
       "daily_avg": 1.608,
@@ -85,6 +94,7 @@
     {
       "timestamp": "2026-03-30T19:36:58.350Z",
       "value": 8228.2,
+      "source": "App-Eingabe User",
       "consumption": 93.1,
       "days_since_last": 4.14,
       "daily_avg": 22.514,

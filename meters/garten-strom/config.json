@@ -45,9 +45,12 @@
       "note": "30,31 ct netto + 19% MwSt, Strom.mini SV, Rechnung 2023"
     },
     {
-      "valid_from": "2025-01-01",
+      "valid_from": "2024-08-03",
       "price_per_kwh": 0.3494,
-      "note": "29,36 ct netto + 19% MwSt, Strom.fam SV, Rechnung 2025"
+      "price_per_kwh_netto": 0.29360,
+      "grundpreis_jahr_netto": 120.60,
+      "messtechnik_jahr_netto": 11.52,
+      "note": "Rechnung SWE Strom-KRU 2025, Tarif SWE Strom.fam (SV)"
     }
   ],
   "unit": "kWh"

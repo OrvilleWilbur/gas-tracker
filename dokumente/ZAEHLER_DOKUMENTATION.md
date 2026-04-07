@@ -58,3 +58,14 @@
 **Plausibilität:**
 - Endstand 2895 - Vorstand 2817 = 78 kWh in 75 Tagen = 1.04 kWh/d (im Rahmen)
 - Neue Ablesung 208 kWh in 192 Tagen = 1.08 kWh/d (im historischen Rahmen 0.5-2.7 kWh/d)
+
+### Session 2026-04-07
+
+**Aktion:** Datenbereinigung aller Zähler
+**Änderungen:**
+- **fritz-gas readings.json:** source-Felder bei allen 11 Einträgen nachgetragen (Zählerwechsel, Rechnungen SWSZ 2024/2025, Eigenablesungen, App-Eingaben)
+- **garten-strom config.json:** price_history aktualisiert — valid_from 2024-08-03 mit Netto-AP 29,36 ct, Grundpreis 120,60 EUR/a, Messtechnik 11,52 EUR/a (Rechnung SWE Strom-KRU 2025)
+- **gustav-strom config.json:** Tarifinfos ergänzt (SWE Strom.natur maxi SV, VK 30819571, KNr 20293477, Sonderversorgung), price_history mit Netto-Detailfeldern ab 2024-08-17, alter Eintrag 2025-01-01 korrigiert auf 2024-08-17
+- **garten-wasser config.json:** 2 price_history-Einträge ergänzt — Rechnung ThüWa 2025 (GP 120 EUR/a) + Preisanpassung ab 01.03.2025 (Bereitstellungspreis 123,96 EUR/a)
+**Quelle:** Rechnungsdaten aus vorherigen Sessions, SWE-Kundenportal
+**config.json fritz-gas:** keine Änderung nötig

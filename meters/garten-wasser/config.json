@@ -10,6 +10,20 @@
       "valid_from": "2012-01-01",
       "price_per_m3": 1.9581,
       "note": "1,83 EUR/m³ netto + 7% MwSt, konstant seit 2012, Rechnung 2013"
+    },
+    {
+      "valid_from": "2024-08-03",
+      "price_per_m3": 1.9581,
+      "price_per_m3_netto": 1.83,
+      "grundpreis_jahr_netto": 120.00,
+      "note": "Rechnung ThüWa Wasser-KRU 2025"
+    },
+    {
+      "valid_from": "2025-03-01",
+      "price_per_m3": 1.9581,
+      "price_per_m3_netto": 1.83,
+      "bereitstellungspreis_jahr_netto": 123.96,
+      "note": "Preisanpassung ThüWa ab 01.03.2025, Grundpreis ersetzt durch Bereitstellungspreis"
     }
   ],
   "unit": "m³"
