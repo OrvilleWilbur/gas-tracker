@@ -1,14 +1,24 @@
 {
   "meter_id": "1DZG0061092460",
+  "name": "Strom",
   "type": "strom",
-  "initial_reading": 0,
-  "max_daily_consumption": 50,
-  "plausibility_factor": 3.0,
+  "unit": "kWh",
+  "address": "Gustav-Adolf-Str. 15, Erfurt",
   "owner": "SWE Energie GmbH",
-  "tarif": "SWE Strom.natur maxi (SV)",
-  "vertragskonto": "30819571",
+  "tarif": "SWE Strom.natur mini/fam/maxi (SV)",
   "kundennummer": "20293477",
+  "vertragskonto": "30819571",
   "vertragsart": "Sonderversorgung (außerhalb Grundversorgung)",
+  "price_per_kwh": 0.317,
+  "grundpreis_year": 231.84,
+  "initial_reading": 0,
+  "max_daily_consumption": 30,
+  "plausibility_factor": 3.0,
+  "old_meter": {
+    "meter_id": "36232245",
+    "final_reading": 88160,
+    "swap_date": "2023-11-29"
+  },
   "price_history": [
     {
       "valid_from": "2020-04-01",
@@ -23,11 +33,16 @@
     {
       "valid_from": "2024-08-17",
       "price_per_kwh": 0.3314,
-      "price_per_kwh_netto": 0.27850,
+      "price_per_kwh_netto": 0.2785,
       "grundpreis_jahr_netto": 176.04,
       "messtechnik_jahr_netto": 11.52,
       "note": "Rechnung SWE Strom-GAS 2025, Tarif SWE Strom.natur maxi (SV), moderne Messeinrichtung"
+    },
+    {
+      "valid_from": "2026-04-07",
+      "price_per_kwh_brutto": 0.317,
+      "grundpreis_year_brutto": 231.84,
+      "note": "SWE-Kundenportal 07.04.2026, Stufe 3.000-100.000 kWh: 31,70 ct/kWh, GP 17,70+1,62 EUR/Mon"
     }
-  ],
-  "unit": "kWh"
+  ]
 }

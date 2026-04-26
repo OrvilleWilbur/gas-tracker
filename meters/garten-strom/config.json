@@ -1,10 +1,18 @@
 {
   "meter_id": "1DZG0061148558",
+  "name": "Strom",
   "type": "strom",
-  "initial_reading": 0,
-  "max_daily_consumption": 50,
-  "plausibility_factor": 3.0,
+  "unit": "kWh",
+  "address": "Auf der Kartause 10a, Erfurt",
   "owner": "SWE Energie GmbH",
+  "tarif": "SWE Strom.fam (SV)",
+  "kundennummer": "20293477",
+  "vertragskonto": "30831514",
+  "price_per_kwh": 0.3463,
+  "grundpreis_year": 154.68,
+  "initial_reading": 0,
+  "max_daily_consumption": 15,
+  "plausibility_factor": 3.0,
   "meter_type": "Zweirichtungszähler",
   "meter_model": "DZG DWS7412.2V.G2",
   "meter_year": 2023,
@@ -47,11 +55,16 @@
     {
       "valid_from": "2024-08-03",
       "price_per_kwh": 0.3494,
-      "price_per_kwh_netto": 0.29360,
-      "grundpreis_jahr_netto": 120.60,
+      "price_per_kwh_netto": 0.2936,
+      "grundpreis_jahr_netto": 120.6,
       "messtechnik_jahr_netto": 11.52,
       "note": "Rechnung SWE Strom-KRU 2025, Tarif SWE Strom.fam (SV)"
+    },
+    {
+      "valid_from": "2026-04-07",
+      "price_per_kwh_brutto": 0.3463,
+      "grundpreis_year_brutto": 154.68,
+      "note": "SWE-Kundenportal 07.04.2026, Stufe 1-999 kWh: 34,63 ct/kWh, GP 11,27+1,62 EUR/Mon"
     }
-  ],
-  "unit": "kWh"
+  ]
 }
