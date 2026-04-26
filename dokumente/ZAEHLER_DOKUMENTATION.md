@@ -69,3 +69,34 @@
 - **garten-wasser config.json:** 2 price_history-Einträge ergänzt — Rechnung ThüWa 2025 (GP 120 EUR/a) + Preisanpassung ab 01.03.2025 (Bereitstellungspreis 123,96 EUR/a)
 **Quelle:** Rechnungsdaten aus vorherigen Sessions, SWE-Kundenportal
 **config.json fritz-gas:** keine Änderung nötig
+
+### Session 2026-04-27 — Code-Abschluss
+
+**Kontext:** Projekt wird ab sofort vollständig in Cowork weitergeführt. Claude Code wird für dieses Projekt nicht mehr verwendet.
+
+**Code-Verbesserungen am SPA & E-Mail-System (committed):**
+- Chart-Glättung mit gewichtetem 360-Tage gleitenden Durchschnitt (App + E-Mail-PNG)
+- XSS-Schutz via `esc()`-Funktion für alle innerHTML mit dynamischen Daten
+- `Promise.all` in `loadData()` (paralleles Laden config + readings)
+- Viewport-Zoom freigegeben (WCAG-konform)
+- `unescape(encodeURIComponent())` durch `TextEncoder` + `bytesToB64()` ersetzt
+- `alert()` durch In-App `showError()` ersetzt
+- matplotlib in GitHub Action auf `>=3.8,<4` gepinnt
+- Offline-Erkennung F-06 verifiziert (war bereits implementiert)
+
+**Datenpflege (committed):**
+- Zählerwechsel Garten Strom: 36315107 → 1DZG0061148558 (25.09.2025), Endstand 2895 kWh, Anfangsstand 0 kWh
+- Aktuelle Ablesung Garten Strom: 208 kWh (05.04.2026), Quelle Foto vor Ort
+- UTF-8-Encoding-Fix in garten-wasser/readings.json (`SchÃ¤tzung` → `Schätzung`)
+- Datenbereinigung: source-Felder fritz-gas, price_history-Erweiterungen (Netto-AP, Grundpreis, Messtechnik) für garten-strom, gustav-strom, garten-wasser
+
+**Finaler Merge (committed):**
+- garten-strom + gustav-strom config.json: Adressen, Tarif-Details, Vertragskonten, aktuelle Preise vom 07.04.2026 aus SWE-Portal **mit** Zählerwechsel-Doku zusammengeführt
+- previous_meters-Array bleibt erhalten neben address/tarif/kundennummer/vertragskonto
+
+**Sync-Status:**
+- gas-tracker-clone/ → Referenz, alles auf origin/main
+- gas-tracker/ → mit gemergten configs synchronisiert
+- gas-tracker-v2/ → kein meters/-Ordner, wird in Cowork neu strukturiert
+
+**Offen:** Keine Code-spezifischen Aufgaben mehr. Fortsetzung in Cowork.
