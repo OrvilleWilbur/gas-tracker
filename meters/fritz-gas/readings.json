@@ -4,7 +4,7 @@
     {
       "timestamp": "2023-07-05T12:00:00+02:00",
       "value": 0,
-      "source": "Zählerwechsel",
+      "source": "ZÃ¤hlerwechsel",
       "consumption": null,
       "days_since_last": null,
       "daily_avg": null,
@@ -98,6 +98,14 @@
       "consumption": 93.1,
       "days_since_last": 4.14,
       "daily_avg": 22.514,
+      "suspicious": false
+    },
+    {
+      "timestamp": "2026-06-04T09:14:29.109Z",
+      "value": 8653.3,
+      "consumption": 425.1,
+      "days_since_last": 65.57,
+      "daily_avg": 6.483,
       "suspicious": false
     }
   ]
