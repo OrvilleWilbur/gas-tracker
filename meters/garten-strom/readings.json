@@ -13,7 +13,7 @@
     {
       "timestamp": "2018-07-05T12:00:00+01:00",
       "value": 41,
-      "source": "Rechnung SWE Strom-KRU 2018 (SchÃÂÃÂÃÂÃÂ¤tzung)",
+      "source": "Rechnung SWE Strom-KRU 2018 (SchÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¤tzung)",
       "consumption": 41,
       "days_since_last": 29,
       "daily_avg": 1.414,
@@ -40,7 +40,7 @@
     {
       "timestamp": "2022-07-02T12:00:00+01:00",
       "value": 1080,
-      "source": "Rechnung SWE Strom-KRU 2023, Periodenstart (SchÃÂÃÂÃÂÃÂ¤tzung)",
+      "source": "Rechnung SWE Strom-KRU 2023, Periodenstart (SchÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¤tzung)",
       "consumption": 332,
       "days_since_last": 706,
       "daily_avg": 0.47,
@@ -76,7 +76,7 @@
     {
       "timestamp": "2025-09-25T12:00:00+01:00",
       "value": 2895,
-      "source": "ZÃÂÃÂÃÂÃÂ¤hlerwechsel Endstand alt (36315107), SWE-Portal + Foto",
+      "source": "ZÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¤hlerwechsel Endstand alt (36315107), SWE-Portal + Foto",
       "consumption": 78,
       "days_since_last": 75,
       "daily_avg": 1.04,
@@ -85,7 +85,7 @@
     {
       "timestamp": "2025-09-25T12:00:01+01:00",
       "value": 0,
-      "source": "ZÃÂÃÂÃÂÃÂ¤hlerwechsel Anfangsstand neu (1DZG0061148558), SWE-Portal",
+      "source": "ZÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¤hlerwechsel Anfangsstand neu (1DZG0061148558), SWE-Portal",
       "consumption": null,
       "days_since_last": null,
       "daily_avg": null,
@@ -130,6 +130,14 @@
       "consumption": 48,
       "days_since_last": 33.35,
       "daily_avg": 1.439,
+      "suspicious": false
+    },
+    {
+      "timestamp": "2026-08-09T14:42:18.310Z",
+      "value": 356,
+      "consumption": 41,
+      "days_since_last": 59.74,
+      "daily_avg": 0.686,
       "suspicious": false
     }
   ]
